@@ -57,7 +57,7 @@ public class ProductDAL {
     }
 
     // 2️⃣ Lấy mã loại sản phẩm từ sản phẩm
-    public static int getMaLoaiBySanPham(int idLoai) {
+    public static int getMaLoaiBySP(int idLoai) {
 
         String sql = "SELECT MALOAISANPHAM FROM SANPHAM WHERE MALOAISANPHAM = ?";
 

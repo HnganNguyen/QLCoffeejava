@@ -97,6 +97,25 @@ public class NguyenLieuDAL {
         }
         return false;
     }
+    public static boolean EditNguyenLieu(NguyenLieuDTO nl) {
+        String sql = "UPDATE HANGTONKHO SET TEN = ?, GIAGOC = ?, GHICHU = ? WHERE MA = ?";
+
+        try (Connection conn = MySQLConnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nl.getTen());
+            ps.setDouble(2, nl.getGiaGoc());
+            ps.setString(3, nl.getGhiChu());
+            ps.setInt(4, nl.getMa());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    
+}
+
 
     // 4️⃣ Xóa nguyên liệu
     public static void deleteNguyenLieu(int ma) {

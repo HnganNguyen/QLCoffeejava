@@ -21,7 +21,7 @@ public class BillDAL {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                listBill.add(new BillUpDTO(rs));
+                listBill.add(new BillDTO(rs));
             }
 
         } catch (Exception e) {

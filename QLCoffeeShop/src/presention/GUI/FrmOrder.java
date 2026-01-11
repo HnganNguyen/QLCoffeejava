@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-
-
 public class FrmOrder  extends JFrame {
 	
 	private JPanel flpTable;
@@ -29,8 +27,8 @@ public class FrmOrder  extends JFrame {
     public FrmOrder() {
         initUI();
         loadTable();
-        loadTypeProduct();
-        startTimer();
+//        loadTypeProduct();
+//        startTimer();
     }
     
     private void initUI() {
