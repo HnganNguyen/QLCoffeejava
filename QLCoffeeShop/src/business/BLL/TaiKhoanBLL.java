@@ -22,7 +22,7 @@ public class TaiKhoanBLL {
     }
 
     // 4️⃣ Xóa tài khoản
-    public static boolean deleteTaiKhoan(int id) {
+    public static boolean deleteTaiKhoan(String id) {
         return TaiKhoanDAL.deleteTaiKhoan(id);
     }
 
@@ -31,9 +31,9 @@ public class TaiKhoanBLL {
         return TaiKhoanDAL.getListAccountOnStatus(status);
     }
 
-    // 6️⃣ Đăng nhập (trả về đối tượng nếu đúng)
-    public static TaiKhoanDTO dangNhap(int maTK, String password) {
-        return TaiKhoanDAL.getAccountByUsernameAndPassword(maTK, password);
+    // 6️⃣ Đăng nhập
+    public static TaiKhoanDTO login(String maTK, String password) {
+        return TaiKhoanDAL.login(maTK, password);
     }
 
     // 7️⃣ Tìm kiếm theo tên
@@ -42,12 +42,21 @@ public class TaiKhoanBLL {
     }
 
     // 8️⃣ Lấy tài khoản theo ID
-    public static TaiKhoanDTO getTaiKhoanById(int id) {
+    public static TaiKhoanDTO getTaiKhoanById(String id) {
         return TaiKhoanDAL.getTaiKhoanById(id);
     }
 
-    // 9️⃣ Lấy danh sách nhân viên (id + tên)
+    // 9️⃣ Lấy danh sách nhân viên
     public static List<TaiKhoanDTO> layDanhSachNhanVien() {
         return TaiKhoanDAL.layDanhSachNhanVien();
     }
+
+    // 🔟 ĐỔI MẬT KHẨU (DÙNG CHO ChangePasswordGUI)
+    public static boolean changePassword(String maTK, String oldPass, String newPass) {
+        return TaiKhoanDAL.changePassword(maTK, oldPass, newPass);
+    }
+    public static String getMaTaiKhoanByUsername(String username) {
+        return TaiKhoanDAL.getMaTaiKhoanByUsername(username);
+    }
+
 }

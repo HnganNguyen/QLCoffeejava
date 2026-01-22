@@ -7,25 +7,23 @@ import java.util.List;
 
 public class NguyenLieuBLL {
 
-    public static List<NguyenLieuDTO> getAllNguyenLieu() {
+    // Lấy danh sách nguyên liệu
+    public static List<NguyenLieuDTO> getAll() {
         return NguyenLieuDAL.getAllNguyenLieu();
     }
 
-    public static boolean insertNguyenLieu(NguyenLieuDTO nl) {
+    // Thêm nguyên liệu
+    public static boolean insert(NguyenLieuDTO nl) {
         return NguyenLieuDAL.insertNguyenLieu(nl);
     }
 
-    public static List<NguyenLieuDTO> updateNguyenLieu(NguyenLieuDTO nl) {
-        NguyenLieuDAL.updateNguyenLieu(nl);
-        return getAllNguyenLieu(); // Trả về danh sách mới sau khi cập nhật
+    // CẬP NHẬT NGUYÊN LIỆU  ❗ SỬA Ở ĐÂY
+    public static boolean update(NguyenLieuDTO nl) {
+        return NguyenLieuDAL.updateNguyenLieu(nl); // ✅ ĐÚNG TÊN HÀM DAL
     }
 
-    public static boolean EditNguyenLieu(NguyenLieuDTO nl) {
-        return NguyenLieuDAL.EditNguyenLieu(nl);
-    }
-
-    public static List<NguyenLieuDTO> deleteNguyenLieu(int ma) {
-        NguyenLieuDAL.deleteNguyenLieu(ma);
-        return getAllNguyenLieu(); // Trả về danh sách mới sau khi xóa
+    // Xoá nguyên liệu
+    public static boolean delete(int ma) {
+        return NguyenLieuDAL.deleteNguyenLieu(ma);
     }
 }

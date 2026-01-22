@@ -11,39 +11,51 @@ public class ProductDTO {
     private double salePrice;
     private int status;
     private int idTypeProduct;
+    private String img;
 
     // Constructor rỗng
     public ProductDTO() {
     }
 
-    // Constructor đầy đủ tham số
     public ProductDTO(int id,
                       String nameProducts,
                       double priceBasic,
                       double salePrice,
                       int status,
-                      int idTypeProduct) {
+                      int idTypeProduct,
+                      String img) {
         this.id = id;
         this.nameProducts = nameProducts;
         this.priceBasic = priceBasic;
         this.salePrice = salePrice;
         this.status = status;
         this.idTypeProduct = idTypeProduct;
+        this.img = img;
     }
 
-    // Constructor từ ResultSet (tương đương DataRow trong C#)
+    public ProductDTO(int id,
+                      String nameProducts,
+                      double priceBasic,
+                      double salePrice,
+                      int status,
+                      int idTypeProduct) {
+        this(id, nameProducts, priceBasic, salePrice, status, idTypeProduct, null);
+    }
+
+    // Constructor từ ResultSet
     public ProductDTO(ResultSet rs) throws SQLException {
         this.id = rs.getInt("ma");
         this.nameProducts = rs.getString("tensanpham");
         this.priceBasic = rs.getDouble("giacoban");
 
-        // Kiểm tra NULL giống C#
         this.salePrice = rs.getObject("giakhuyenmai") != null
                 ? rs.getDouble("giakhuyenmai")
                 : 0;
 
         this.status = rs.getInt("trangthai");
         this.idTypeProduct = rs.getInt("maloaisanpham");
+
+        this.img = rs.getString("img");
     }
 
     // ===== Getter & Setter =====
@@ -94,5 +106,13 @@ public class ProductDTO {
 
     public void setIDTypeProduct(int idTypeProduct) {
         this.idTypeProduct = idTypeProduct;
+    }
+
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
     }
 }

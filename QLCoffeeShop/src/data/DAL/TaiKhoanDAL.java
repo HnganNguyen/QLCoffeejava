@@ -39,7 +39,7 @@ public class TaiKhoanDAL {
         try (Connection conn = MySQLConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, tk.getId());
+            ps.setString(1, tk.getId());
             ps.setString(2, tk.getTenTK());
             ps.setString(3, tk.getPassword());
             ps.setString(4, tk.getCccd());
@@ -76,7 +76,7 @@ public class TaiKhoanDAL {
             ps.setInt(6, tk.getQuyen());
             ps.setInt(7, tk.getTrangThai());
             ps.setDouble(8, tk.getLuongByCa());
-            ps.setInt(9, tk.getId());
+            ps.setString(9, tk.getId());
 
             return ps.executeUpdate() == 1;
         } catch (Exception e) {
@@ -86,13 +86,13 @@ public class TaiKhoanDAL {
     }
 
     // 4️⃣ Xóa tài khoản
-    public static boolean deleteTaiKhoan(int id) {
+    public static boolean deleteTaiKhoan(String id) {
         String sql = "DELETE FROM TAIKHOAN WHERE MATAIKHOAN = ?";
 
         try (Connection conn = MySQLConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, id);
+            ps.setString(1, id);
             return ps.executeUpdate() == 1;
         } catch (Exception e) {
             e.printStackTrace();
@@ -120,14 +120,14 @@ public class TaiKhoanDAL {
         return list;
     }
 
-    // 6️⃣ Đăng nhập (true / false)
-    public static boolean dangNhap(int maTK, String password) {
+    // ❌ CŨ – giữ nếu cần
+    public static boolean dangNhap(String maTK, String password) {
         String sql = "SELECT 1 FROM TAIKHOAN WHERE MATAIKHOAN = ? AND PASS = ?";
 
         try (Connection conn = MySQLConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, maTK);
+            ps.setString(1, maTK);
             ps.setString(2, password);
 
             ResultSet rs = ps.executeQuery();
@@ -138,14 +138,19 @@ public class TaiKhoanDAL {
         return false;
     }
 
-    // 7️⃣ Lấy tài khoản theo username + password
-    public static TaiKhoanDTO getAccountByUsernameAndPassword(int username, String password) {
-        String sql = "SELECT * FROM TAIKHOAN WHERE MATAIKHOAN = ? AND PASS = ?";
+    // ✅ LOGIN CHUẨN
+    public static TaiKhoanDTO login(String maTK, String password) {
+        String sql = """
+            SELECT * FROM TAIKHOAN
+            WHERE MATAIKHOAN = ?
+              AND PASS = ?
+              AND TRANGTHAI = 1
+        """;
 
         try (Connection conn = MySQLConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, username);
+            ps.setString(1, maTK);
             ps.setString(2, password);
 
             ResultSet rs = ps.executeQuery();
@@ -158,7 +163,7 @@ public class TaiKhoanDAL {
         return null;
     }
 
-    // 8️⃣ Tìm kiếm theo tên
+    // 8️⃣ Tìm theo tên
     public static List<TaiKhoanDTO> searchTaiKhoanByName(String keyword) {
         List<TaiKhoanDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM TAIKHOAN WHERE TEN LIKE ?";
@@ -178,14 +183,14 @@ public class TaiKhoanDAL {
         return list;
     }
 
-    // 9️⃣ Lấy tài khoản theo ID
-    public static TaiKhoanDTO getTaiKhoanById(int id) {
+    // 9️⃣ Lấy theo ID
+    public static TaiKhoanDTO getTaiKhoanById(String id) {
         String sql = "SELECT * FROM TAIKHOAN WHERE MATAIKHOAN = ?";
 
         try (Connection conn = MySQLConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, id);
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
@@ -197,7 +202,7 @@ public class TaiKhoanDAL {
         return null;
     }
 
-    // 🔟 Lấy danh sách nhân viên (ID + Tên)
+    // 🔟 Danh sách nhân viên
     public static List<TaiKhoanDTO> layDanhSachNhanVien() {
         List<TaiKhoanDTO> list = new ArrayList<>();
         String sql = "SELECT MATAIKHOAN, TEN FROM TAIKHOAN";
@@ -208,7 +213,7 @@ public class TaiKhoanDAL {
 
             while (rs.next()) {
                 TaiKhoanDTO tk = new TaiKhoanDTO();
-                tk.setId(rs.getInt("MATAIKHOAN"));
+                tk.setId(rs.getString("MATAIKHOAN"));
                 tk.setTenTK(rs.getString("TEN"));
                 list.add(tk);
             }
@@ -217,4 +222,46 @@ public class TaiKhoanDAL {
         }
         return list;
     }
+ // 🔟 Đổi mật khẩu (dùng cho ChangePasswordGUI)
+    public static boolean changePassword(String maTK, String oldPass, String newPass) {
+
+        String sql = """
+            UPDATE TAIKHOAN
+            SET PASS = ?
+            WHERE MATAIKHOAN = ?
+              AND PASS = ?
+              AND TRANGTHAI = 1
+        """;
+
+        try (Connection conn = MySQLConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, newPass);
+            ps.setString(2, maTK);
+            ps.setString(3, oldPass);
+
+            // nếu update được 1 dòng => mật khẩu cũ đúng
+            return ps.executeUpdate() == 1;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public static String getMaTaiKhoanByUsername(String username) {
+        String sql = "SELECT MATAIKHOAN FROM taikhoan WHERE TEN=?";
+        try (Connection con = MySQLConnect.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("MATAIKHOAN");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
