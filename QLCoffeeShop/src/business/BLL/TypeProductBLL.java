@@ -12,9 +12,13 @@ public class TypeProductBLL {
     }
 
     // 🔹 Lấy danh sách loại sản phẩm theo trạng thái
-    public static List<TypeProductDTO> getListTypeProductWithStatus(int status) {
-        return TypeProductDAL.getListTypeProductWithStatus(status);
-    }
+
+
+        public static List<TypeProductDTO> getListTypeProductByStatus(int status) {
+            return TypeProductDAL.getListTypeProductByStatus(status);
+        }
+    
+
 
     // 🔹 Thêm loại sản phẩm
     public static boolean insertTypeProduct(TypeProductDTO typeProduct) {

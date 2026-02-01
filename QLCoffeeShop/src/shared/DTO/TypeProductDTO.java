@@ -5,30 +5,25 @@ import java.sql.SQLException;
 
 public class TypeProductDTO {
 
-    // ===== Fields =====
     private int id;          // MA
     private String nameType; // TENLOAI
     private int status;      // TRANGTHAI
 
-    // ===== Constructor rỗng =====
-    public TypeProductDTO() {
-    }
+    public TypeProductDTO() {}
 
-    // ===== Constructor đầy đủ =====
     public TypeProductDTO(int id, String nameType, int status) {
         this.id = id;
         this.nameType = nameType;
         this.status = status;
     }
 
-    // ===== Constructor đọc từ ResultSet (thay cho DataRow) =====
+    // ⚠️ BẮT BUỘC – DAL ĐANG DÙNG
     public TypeProductDTO(ResultSet rs) throws SQLException {
         this.id = rs.getInt("MA");
         this.nameType = rs.getString("TENLOAI");
         this.status = rs.getInt("TRANGTHAI");
     }
 
-    // ===== Getter & Setter =====
     public int getId() {
         return id;
     }
@@ -52,5 +47,10 @@ public class TypeProductDTO {
     public void setStatus(int status) {
         this.status = status;
     }
-}
 
+    // ⭐ CỰC KỲ QUAN TRỌNG (ComboBox + Table)
+    @Override
+    public String toString() {
+        return nameType;
+    }
+}

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import shared.DTO.BillDTO;
 import shared.DTO.*;
 import data.DAL.*;
+import java.util.Date;
 
 public class BillBLL {
 
@@ -24,12 +25,16 @@ public class BillBLL {
         return BillDAL.getIDBillMax();
     }
 
-//    public static void insertBill(LocalDateTime thoiGian,
-//                                  double tongTien,
-//                                  int employ,
-//                                  int idTable) {
-//        BillDAL.insertBill(thoiGian, tongTien, employ, idTable);
-//    }
+    public static void insertBill(
+            Date dateTime,
+            double total,
+            String employId,
+            int idTable) {
+
+        BillDAL.insertBill(dateTime, total, employId, idTable);
+    }
+
+
 //
 //    public static void updateBill(int id,
 //                                  double totalBill,
@@ -47,4 +52,6 @@ public class BillBLL {
     public static void deleteBill(int id) {
         BillDAL.deleteBill(id);
     }
+
+
 }

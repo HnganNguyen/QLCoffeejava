@@ -47,7 +47,7 @@ public class ProductDAL {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                listProduct.add(new ProductDTO(rs));
+                listProduct.add(new ProductDTO(rs)); // DTO đã đọc IMG
             }
 
         } catch (Exception e) {
@@ -119,13 +119,13 @@ public class ProductDAL {
         return listProduct;
     }
 
-    // 5️⃣ Thêm sản phẩm
+    // 5️⃣ Thêm sản phẩm (CÓ IMG)
     public static boolean addProduct(ProductDTO product) {
 
         String sql = """
             INSERT INTO SANPHAM
-            (TENSANPHAM, GIACOBAN, GIAKHUYENMAI, MALOAISANPHAM, TRANGTHAI)
-            VALUES (?, ?, ?, ?, ?)
+            (TENSANPHAM, GIACOBAN, GIAKHUYENMAI, MALOAISANPHAM, TRANGTHAI, IMG)
+            VALUES (?, ?, ?, ?, ?, ?)
         """;
 
         try (Connection conn = MySQLConnect.getConnection();
@@ -137,6 +137,13 @@ public class ProductDAL {
             ps.setInt(4, product.getIDTypeProduct());
             ps.setInt(5, product.getStatus());
 
+            // IMG
+            if (product.getImg() == null || product.getImg().isEmpty()) {
+                ps.setNull(6, java.sql.Types.VARCHAR);
+            } else {
+                ps.setString(6, product.getImg());
+            }
+
             return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
@@ -145,7 +152,6 @@ public class ProductDAL {
         return false;
     }
 
-    // 6️⃣ Cập nhật sản phẩm
     public static boolean updateProduct(ProductDTO product) {
 
         String sql = """
@@ -154,7 +160,8 @@ public class ProductDAL {
                 GIACOBAN = ?,
                 GIAKHUYENMAI = ?,
                 TRANGTHAI = ?,
-                MALOAISANPHAM = ?
+                MALOAISANPHAM = ?,
+                IMG = ?
             WHERE MA = ?
         """;
 
@@ -166,7 +173,15 @@ public class ProductDAL {
             ps.setDouble(3, product.getSalePrice());
             ps.setInt(4, product.getStatus());
             ps.setInt(5, product.getIDTypeProduct());
-            ps.setInt(6, product.getID());
+
+            // IMG
+            if (product.getImg() == null || product.getImg().isEmpty()) {
+                ps.setNull(6, java.sql.Types.VARCHAR);
+            } else {
+                ps.setString(6, product.getImg());
+            }
+
+            ps.setInt(7, product.getID());
 
             return ps.executeUpdate() > 0;
 

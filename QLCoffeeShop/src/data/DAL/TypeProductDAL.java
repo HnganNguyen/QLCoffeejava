@@ -10,27 +10,29 @@ import java.util.List;
 
 public class TypeProductDAL {
 
-    // 1️⃣ Lấy danh sách loại sản phẩm theo trạng thái (0/1)
-    public static List<TypeProductDTO> getListTypeProductWithStatus(int status) {
-        List<TypeProductDTO> listType = new ArrayList<>();
 
-        String sql = "SELECT * FROM LOAISANPHAM WHERE TRANGTHAI = ?";
 
-        try (Connection conn = MySQLConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+	    public static List<TypeProductDTO> getListTypeProductByStatus(int status) {
+	        List<TypeProductDTO> list = new ArrayList<>();
+	        String sql = "SELECT * FROM LOAISANPHAM WHERE TRANGTHAI = ?";
 
-            ps.setInt(1, status);
-            ResultSet rs = ps.executeQuery();
+	        try (Connection conn = MySQLConnect.getConnection();
+	             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            while (rs.next()) {
-                listType.add(new TypeProductDTO(rs));
-            }
+	            ps.setInt(1, status);
+	            ResultSet rs = ps.executeQuery();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return listType;
-    }
+	            while (rs.next()) {
+	                list.add(new TypeProductDTO(rs));
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	        return list;
+	    }
+	
+
 
     // 2️⃣ Lấy toàn bộ loại sản phẩm
     public static List<TypeProductDTO> getAllListTypeProduct() {
@@ -149,5 +151,8 @@ public class TypeProductDAL {
         }
         return -1;
     }
+
+	
+
 }
 

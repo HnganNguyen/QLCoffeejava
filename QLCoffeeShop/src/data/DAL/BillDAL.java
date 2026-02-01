@@ -101,27 +101,28 @@ public class BillDAL {
     }
 
     // 5️⃣ Thêm hóa đơn mới
-    public static void insertBill(Date dateTime,
-                                  double total,
-                                  int employ,
-                                  int idTable) {
+	 public static void insertBill(Date dateTime,
+	            double total,
+	            String employId,   // ✅ ĐÚNG
+	            int idTable) {
+	
+	String sql = "CALL USP_InsertBILL(?,?,?,?)";
+	
+		try (Connection conn = MySQLConnect.getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql)) {
+	
+			ps.setTimestamp(1, new java.sql.Timestamp(dateTime.getTime()));
+			ps.setDouble(2, total);
+			ps.setString(3, employId);   // ✅ String
+			ps.setInt(4, idTable);
+	
+			ps.executeUpdate();
+	
+		} catch (Exception e) {
+			e.printStackTrace();
+	}
+	}
 
-        String sql = "CALL USP_InsertBILL(?,?,?,?)";
-
-        try (Connection conn = MySQLConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setTimestamp(1, new java.sql.Timestamp(dateTime.getTime()));
-            ps.setDouble(2, total);
-            ps.setInt(3, employ);
-            ps.setInt(4, idTable);
-
-            ps.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     // 6️⃣ Xóa hóa đơn
     public static void deleteBill(int idBill) {
