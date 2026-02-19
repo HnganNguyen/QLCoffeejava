@@ -123,7 +123,7 @@
 	        
 	     // ===== TABLE SẢN PHẨM =====
 	        modelSanPham = new DefaultTableModel(
-	            new String[]{"STT", "Tên sản phẩm", "Giá bán"}, 0) {
+	        		 new String[]{"ID", "Tên sản phẩm", "Giá bán"}, 0) {
 	            @Override
 	            public boolean isCellEditable(int row, int column) {
 	                return false;
@@ -488,7 +488,7 @@
 	        int stt = 1;
 	        for (ProductDTO p : listProduct) {
 	            Object[] row = {
-	                stt++,
+	            		  p.getID(),       
 	                p.getNameProducts(),
 	                String.format("%,.0f VNĐ", p.getSalePrice()) // ✅ FIX Ở ĐÂY
 	            };
@@ -537,11 +537,14 @@
 	    //=============================================================//
 	    private void handleSelectSanPham() { // Hàm này chạy chưa HOÀN CHỈNH=> KHI THAO TÁC CHỌN SẢN PHẨM TỪ lstSamPham nó ko nhảy qua lstBill
 
-	        int row = lstSanPham.getSelectedRow();
+	    	int row = lstSanPham.getSelectedRow();
 	        if (row == -1) return;
 
-	        // ===== LẤY PRODUCT =====
-	        int productId = Integer.parseInt(modelSanPham.getValueAt(row, 0).toString());
+	        // ===== LẤY ID SẢN PHẨM =====
+	        int productId = Integer.parseInt(
+	                modelSanPham.getValueAt(row, 0).toString()
+	        );
+
 	        String name = modelSanPham.getValueAt(row, 1).toString();
 
 	        String priceStr = modelSanPham.getValueAt(row, 2).toString()
@@ -564,7 +567,7 @@
 	        if (chosenTable == null) {
 	            JOptionPane.showMessageDialog(
 	                    this,
-	                    "Bạn chưa chọn bàn để thêm thức uống!",
+	                    "Vui lòng chọn bàn trước khi thêm sản phẩm!",
 	                    "Thông báo",
 	                    JOptionPane.WARNING_MESSAGE
 	            );
@@ -573,38 +576,15 @@
 
 	        // ===== LẤY BÀN =====
 	        TableDTO table = (TableDTO) chosenTable.getClientProperty("TABLE");
-	        if (table == null) return;
-
 	        int idTable = table.getID();
 
-	        // ===== BÀN CHƯA CÓ HÓA ĐƠN =====
-	        if (TableBLL.getStatusByIDTable(idTable) == 0) {
-
-	            int kq = JOptionPane.showConfirmDialog(
-	                    this,
-	                    "Bạn đang chọn bàn mới.\nBạn có muốn tạo hóa đơn mới không?",
-	                    "Thông báo",
-	                    JOptionPane.OK_CANCEL_OPTION
-	            );
-
-	            if (kq != JOptionPane.OK_OPTION) return;
-
-	            TableBLL.updateStatusTable(1, idTable);
-
-	            BillBLL.insertBill(
-	                    new Date(),
-	                    0.0,
-	                    AppContext.taiKhoanDangNhap.getId(),
-	                    idTable
-	            );
-
-	            // 🔥 LẤY ID BILL VỪA TẠO
-	           	            btnThanhToan.setEnabled(true);
-	        }
-
-	        // ===== THÊM SẢN PHẨM =====
+	        // ===== THÊM VÀO BILL =====
 	        createAddBillByIDTable(product);
+
+	        // ===== LOAD LẠI BILL =====
 	        showBill(idTable);
+
+	        // ===== LOAD LẠI MÀU BÀN =====
 	        loadTable();
 	    }
 	    //============================================================================//
