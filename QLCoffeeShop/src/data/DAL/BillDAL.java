@@ -138,4 +138,30 @@ public class BillDAL {
             e.printStackTrace();
         }
     }
+    public static int getIDBillByIDTable(int idTable) {
+
+        String sql = """
+            SELECT MA
+            FROM HOADON
+            WHERE MABAN = ? AND TRANGTHAI = 0
+            LIMIT 1
+        """;
+
+        try (Connection conn = MySQLConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idTable);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("MA");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
 }

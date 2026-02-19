@@ -57,4 +57,13 @@ public class ProductBLL {
     public static List<ProductDTO> searchProductByName(String keyword) {
         return ProductDAL.searchProductByName(keyword);
     }
+    
+    public static List<ProductDTO> getProductByType(int typeId) {
+        return ProductDAL.getProductByType(typeId);
+    }
+
+    // Tìm sản phẩm theo tên + loại
+    public static List<ProductDTO> searchProductByNameAndType(String keyword, int typeId) {
+        return ProductDAL.searchProductByNameAndType(keyword, typeId);
+    }
 }

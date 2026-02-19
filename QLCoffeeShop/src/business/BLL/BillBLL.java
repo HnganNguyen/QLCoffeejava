@@ -53,5 +53,8 @@ public class BillBLL {
         BillDAL.deleteBill(id);
     }
 
+    public static int getIDBillByIDTable(int idTable) {
+        return BillDAL.getIDBillByIDTable(idTable);
+    }
 
 }
