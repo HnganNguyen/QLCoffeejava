@@ -6,6 +6,10 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/mysql-connector-java-x.y.zz-bin.jar/mysql-connector-j-9.5.0/mysql-connector-j-9.5.0.jar"/>
+	<classpathentry kind="lib" path="D:/CaNhan/KNNN/SetMySQL/mysql-connector-java-8.0.22.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

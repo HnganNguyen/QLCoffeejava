@@ -1,639 +1,610 @@
-	package presention.GUI;
-	
-	import business.BLL.*;
-	import shared.DTO.*;
-
-	
-	import javax.swing.*;
-	import java.awt.*;
-	import java.util.List;
-	import java.awt.event.ActionListener;
-	import java.awt.event.ActionEvent;
-	import javax.swing.table.DefaultTableModel;
-	import javax.swing.border.BevelBorder;
-	import java.awt.Window.Type;
-	import javax.swing.border.LineBorder;
-	import java.awt.event.*;
-	import java.util.Date;
-
-	
-	public class FrmOrder extends JFrame {
-	
-	    private JPanel flpTable;
-	    private JScrollPane spTable;
-	
-	    // ICON BÀN
-		    private ImageIcon tableIcon;
-		    private JTextField txtTuKhoa;
-		    private JTable lstSanPham;
-		    private JTable lstBill;
-		    private JTextField txtHD;
-		    private JTextField txtBan;
-		    private JTextField txttotalPrice;
-		    private DefaultTableModel modelSanPham;
-		    private DefaultTableModel modelBill;
-		    private JPanel chosenTable = null;
-		    private JComboBox<TypeProductDTO> cbLoaiThucUong;
-		    private JButton choseTable;   // bàn đang chọn
-		    private JButton objTable = null; // bàn đang được chọn
-		
-
-	    private JButton btnThanhToan;
-
-	    public FrmOrder() {
-	    	setBackground(new Color(255, 255, 255));
-	    	getContentPane().setBackground(Color.WHITE);
-	        initUI();
-	        loadTable();
-	        System.out.println(cbLoaiThucUong);
-	        loadTypeProduct();
-	        
-	    }
-	
-	    private void initUI() {
-	        setTitle("Quản lý Order");
-	        setSize(1394, 678);
-	        setLocationRelativeTo(null);
-	        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	
-	        // ===== LOAD ICON =====
-	        tableIcon = new ImageIcon(
-	        		getClass().getResource("/resources/images/ban.png")
-	
-	        );
-	        getContentPane().setLayout(null);
-	
-	        // ===== PANEL LEFT =====
-	        JPanel pnlLeft = new JPanel(new BorderLayout());
-	        pnlLeft.setBounds(10, 40, 560, 500);
-	        getContentPane().add(pnlLeft);
-	
-	        // ===== FLOW PANEL =====
-	        flpTable = new JPanel();
-	        flpTable.setLayout(new GridLayout(0, 3, 10, 10)); // 3 cột
-	        flpTable.setBackground(Color.WHITE);
-
-	        flpTable.setBackground(Color.WHITE);
-	
-	        // ===== SCROLL =====
-	        spTable = new JScrollPane(flpTable);
-	        spTable.setHorizontalScrollBarPolicy(
-	                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-	        );
-	        spTable.getVerticalScrollBar().setUnitIncrement(16);
-	
-	        pnlLeft.add(spTable, BorderLayout.CENTER);
-	        
-	        Panel panel = new Panel();
-	        panel.setBackground(new Color(255, 235, 205));
-	        panel.setBounds(1061, 46, 307, 573);
-	        getContentPane().add(panel);
-	        panel.setLayout(null);
-	        
-	        JLabel lblNewLabel_1 = new JLabel("Loại Sản Phẩm:");
-	        lblNewLabel_1.setBounds(20, 48, 107, 15);
-	        lblNewLabel_1.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 13));
-	        panel.add(lblNewLabel_1);
-	        
-	        txtTuKhoa = new JTextField();
-	        txtTuKhoa.setFont(new Font("Tahoma", Font.PLAIN, 12));
-	        txtTuKhoa.setBounds(137, 74, 160, 28);
-	        panel.add(txtTuKhoa);
-	        txtTuKhoa.setColumns(10);
-	        
-	        cbLoaiThucUong = new JComboBox<>();
-	        cbLoaiThucUong.setBounds(137, 41, 160, 22);
-	        panel.add(cbLoaiThucUong);
-
-	        cbLoaiThucUong.addActionListener(e -> {
-	            TypeProductDTO type = (TypeProductDTO) cbLoaiThucUong.getSelectedItem();
-	            if (type != null) {
-	                // status = 1 → sản phẩm đang bán
-	                List<ProductDTO> listProduct =
-	                        ProductBLL.getSanPhamByIDLoaiSP(type.getId(), 1);
-	                loadSanPham(listProduct);
-	            }
-	        });
-
-
-	        JLabel lblNewLabel_1_1 = new JLabel("Tên Sản phẩm");
-	        lblNewLabel_1_1.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 13));
-	        lblNewLabel_1_1.setBounds(20, 87, 107, 15);
-	        panel.add(lblNewLabel_1_1);
-	        
-	     // ===== TABLE SẢN PHẨM =====
-	        modelSanPham = new DefaultTableModel(
-	            new String[]{"STT", "Tên sản phẩm", "Giá bán"}, 0) {
-	            @Override
-	            public boolean isCellEditable(int row, int column) {
-	                return false;
-	            }
-	        };
-
-	        lstSanPham = new JTable(modelSanPham);
-	        lstSanPham.setRowHeight(25);
-	        lstSanPham.getTableHeader().setReorderingAllowed(false);
-	        lstSanPham.getSelectionModel().addListSelectionListener(e -> {
-	            if (!e.getValueIsAdjusting()) {
-	                handleSelectSanPham();
-	            }
-	        });
-	 
-
-	        // scroll cho table
-	        JScrollPane spSanPham = new JScrollPane(lstSanPham);
-	        spSanPham.setBounds(10, 152, 287, 416);
-	        panel.add(spSanPham);
-
-	        
-	        JButton btnTimKiem = new JButton("Tìm");
-	        btnTimKiem.setForeground(new Color(0, 0, 0));
-	        btnTimKiem.setBackground(new Color(128, 64, 0));
-	        btnTimKiem.setFont(new Font("Microsoft Tai Le", Font.BOLD, 15));
-	        btnTimKiem.addActionListener(new ActionListener() {
-	        	public void actionPerformed(ActionEvent e) {
-	        	}
-	        });
-	        btnTimKiem.setBounds(39, 113, 89, 28);
-	        panel.add(btnTimKiem);
-	        
-	        JButton btnLamMoisp = new JButton("Làm mới");
-	        btnLamMoisp.setBackground(new Color(128, 64, 0));
-	        btnLamMoisp.setForeground(new Color(0, 0, 0));
-	        btnLamMoisp.addActionListener(new ActionListener() {
-	        	public void actionPerformed(ActionEvent e) {
-	        	}
-	        });
-	        btnLamMoisp.setFont(new Font("Tahoma", Font.BOLD, 14));
-	        btnLamMoisp.setBounds(190, 112, 107, 29);
-	        panel.add(btnLamMoisp);
-	        
-	        JLabel lblNewLabel = new JLabel("THÔNG TIN SẢN PHẨM");
-	        lblNewLabel.setBounds(20, 16, 190, 14);
-	        panel.add(lblNewLabel);
-	        lblNewLabel.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 14));
-	        
-	        JPanel panel_1 = new JPanel();
-	        panel_1.setBorder(new LineBorder(new Color(0, 0, 0)));
-	        panel_1.setBackground(new Color(255, 239, 213));
-	        panel_1.setBounds(580, 46, 475, 573);
-	        getContentPane().add(panel_1);
-	        panel_1.setLayout(null);
-	        
-	        String[] columnNames = {
-	        	    "STT",
-	        	    "Tên sản phẩm",
-	        	    "Số lượng",
-	        	    "Đơn giá",
-	        	    "Tổng tiền"
-	        	};
-
-	        	modelBill = new DefaultTableModel(columnNames, 0) {
-	        	    @Override
-	        	    public boolean isCellEditable(int row, int column) {
-	        	        return false;
-	        	    }
-	        	};
-
-	        	lstBill = new JTable(modelBill);
-	        	lstBill.setRowHeight(25);
-	        	lstBill.getTableHeader().setReorderingAllowed(false);
-
-	        	lstBill.getColumnModel().getColumn(0).setPreferredWidth(40);
-	        	lstBill.getColumnModel().getColumn(1).setPreferredWidth(200);
-	        	lstBill.getColumnModel().getColumn(2).setPreferredWidth(70);
-	        	lstBill.getColumnModel().getColumn(3).setPreferredWidth(90);
-	        	lstBill.getColumnModel().getColumn(4).setPreferredWidth(110);
-
-	        	JScrollPane spBill = new JScrollPane(lstBill);
-	        	spBill.setBounds(10, 35, 455, 350);
-	        	panel_1.add(spBill);
-
-	        
-	        JLabel lblThngTinBn = new JLabel("DANH MỤC ĐANG ĐƯỢC ORDER");
-	        lblThngTinBn.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 14));
-	        lblThngTinBn.setBounds(10, 11, 263, 14);
-	        panel_1.add(lblThngTinBn);
-	        
-	        JPanel panel_2 = new JPanel();
-	        panel_2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
-	        panel_2.setBackground(new Color(210, 180, 140));
-	        panel_2.setBounds(10, 413, 455, 155);
-	        panel_1.add(panel_2);
-	        panel_2.setLayout(null);
-	        
-	        JLabel lblNewLabel_2 = new JLabel("Mã HĐ");
-	        lblNewLabel_2.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 15));
-	        lblNewLabel_2.setBounds(25, 24, 63, 14);
-	        panel_2.add(lblNewLabel_2);
-	        
-	        txtHD = new JTextField();
-	        txtHD.setBounds(98, 11, 186, 31);
-	        panel_2.add(txtHD);
-	        txtHD.setColumns(10);
-	        
-	        JLabel lblNewLabel_2_1 = new JLabel("Bàn số:");
-	        lblNewLabel_2_1.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 15));
-	        lblNewLabel_2_1.setBounds(25, 69, 62, 14);
-	        panel_2.add(lblNewLabel_2_1);
-	        
-	        txtBan = new JTextField();
-	        txtBan.setColumns(10);
-	        txtBan.setBounds(98, 58, 186, 29);
-	        panel_2.add(txtBan);
-	        
-	        JLabel lblNewLabel_2_1_1 = new JLabel("Thời gian:");
-	        lblNewLabel_2_1_1.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
-	        lblNewLabel_2_1_1.setBounds(25, 94, 81, 25);
-	        panel_2.add(lblNewLabel_2_1_1);
-	        
-	        JLabel lblNewLabel_2_1_1_1 = new JLabel("Tổng tiền: ");
-	        lblNewLabel_2_1_1_1.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
-	        lblNewLabel_2_1_1_1.setBounds(25, 130, 81, 14);
-	        panel_2.add(lblNewLabel_2_1_1_1);
-	        
-	        txttotalPrice = new JTextField();
-	        txttotalPrice.setText("0");
-	        txttotalPrice.setHorizontalAlignment(SwingConstants.LEFT);
-	        txttotalPrice.setColumns(10);
-	        txttotalPrice.setBounds(98, 119, 186, 29);
-	        panel_2.add(txttotalPrice);
-	        
-	        JLabel lblNewLabel_2_2 = new JLabel("(VNĐ)");
-	        lblNewLabel_2_2.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
-	        lblNewLabel_2_2.setBounds(301, 130, 46, 14);
-	        panel_2.add(lblNewLabel_2_2);
-	        
-	        btnThanhToan = new JButton("Thanh Toán");
-	        btnThanhToan.setFont(new Font("Microsoft Tai Le", Font.BOLD, 14));
-	        btnThanhToan.setBackground(new Color(255, 0, 0));
-	        btnThanhToan.setForeground(new Color(255, 235, 205));
-	        btnThanhToan.setBounds(310, 35, 135, 39);
-	        panel_2.add(btnThanhToan);
-	        
-	        JButton btnChuyenBan = new JButton("Chuyển bàn");
-	        btnChuyenBan.setForeground(new Color(255, 255, 255));
-	        btnChuyenBan.setBackground(new Color(128, 64, 0));
-	        btnChuyenBan.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 14));
-	        btnChuyenBan.setBounds(49, 551, 154, 33);
-	        getContentPane().add(btnChuyenBan);
-	        
-	        JButton btnLamMoi = new JButton("Làm mới");
-	        btnLamMoi.setForeground(new Color(255, 255, 255));
-	        btnLamMoi.setBackground(new Color(128, 64, 64));
-	        btnLamMoi.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 14));
-	        btnLamMoi.setBounds(323, 551, 154, 33);
-	        getContentPane().add(btnLamMoi);
-	        btnLamMoi.addActionListener(e -> btnLamMoiActionPerformed());
-
-	        
-	        JPanel panel_3 = new JPanel();
-	        panel_3.setBackground(new Color(210, 180, 140));
-	        panel_3.setBounds(0, -14, 1368, 56);
-	        getContentPane().add(panel_3);
-	        panel_3.setLayout(null);
-	        
-	        JLabel lblNewLabel_3 = new JLabel("ORDER");
-	        lblNewLabel_3.setForeground(new Color(255, 255, 255));
-	        lblNewLabel_3.setBounds(610, 11, 90, 45);
-	        panel_3.add(lblNewLabel_3);
-	        lblNewLabel_3.setBackground(new Color(0, 64, 0));
-	        lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
-	        lblNewLabel_3.setFont(new Font("Segoe UI Black", Font.PLAIN, 25));
-	        
-
-
-	    }
-	
-	    private void loadTable() {
-	    	flpTable.removeAll();
-	
-	        List<TableDTO> tableList = TableBLL.getAllListTable();
-	
-	        for (TableDTO table : tableList) {
-	            JPanel tableCard = createTableCard(table);
-	            flpTable.add(tableCard);
-	        }
-	
-	        flpTable.revalidate();
-	        flpTable.repaint();
-	        
-	    }
-	
-	    private JPanel createTableCard(TableDTO table) {
-
-	        JPanel pnlCard = new JPanel();
-	        pnlCard.setPreferredSize(new Dimension(0, 160));
-	        pnlCard.setLayout(new BoxLayout(pnlCard, BoxLayout.Y_AXIS));
-	        pnlCard.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-	        pnlCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
-	        pnlCard.setOpaque(true);
-	        pnlCard.putClientProperty("TABLE", table);
-
-	        // ===== TÊN BÀN =====
-	        JLabel lblName = new JLabel(table.getNameTable(), SwingConstants.CENTER);
-	        lblName.setFont(new Font("Tahoma", Font.BOLD, 12));
-	        lblName.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-	        // ===== ICON =====
-	        Image img = tableIcon.getImage()
-	                .getScaledInstance(48, 48, Image.SCALE_SMOOTH);
-	        JLabel lblIcon = new JLabel(new ImageIcon(img));
-	        lblIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-	        // ===== TRẠNG THÁI =====
-	        JLabel lblStatus = new JLabel("", SwingConstants.CENTER);
-	        lblStatus.setFont(new Font("Tahoma", Font.BOLD, 12));
-	        lblStatus.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-	        if (table.getStatus() == 0) {
-	            pnlCard.setBackground(new Color(213, 245, 227));
-	            lblStatus.setText("Trống");
-	            lblStatus.setForeground(new Color(0, 150, 0));
-	        } else {
-	            pnlCard.setBackground(new Color(250, 219, 216));
-	            lblStatus.setText("Có người");
-	            lblStatus.setForeground(Color.RED);
-	        }
-
-	        pnlCard.add(Box.createVerticalStrut(10));
-	        pnlCard.add(lblName);
-	        pnlCard.add(Box.createVerticalStrut(10));
-	        pnlCard.add(lblIcon);
-	        pnlCard.add(Box.createVerticalStrut(10));
-	        pnlCard.add(lblStatus);
-
-	        // ✅ CLICK BÀN → LOAD BILL
-	        pnlCard.addMouseListener(new MouseAdapter() {
-	            @Override
-	            public void mouseClicked(MouseEvent e) {
-
-	                // đổi màu bàn
-	                hoverClickTable(pnlCard);
-
-	                // load thông tin
-	                txtBan.setText(table.getNameTable());
-	                showBill(table.getID());
-	            }
-	        });
-
-	       
-
-	        // ⚠️ RETURN LUÔN Ở CUỐI
-	        return pnlCard;
-	    }
-
-
-	    
-	    private void showBill(int idTable) {
-
-	        DefaultTableModel model = (DefaultTableModel) lstBill.getModel();
-	        model.setRowCount(0); // clear table
-
-	        int idBill = BillBLL.getIDBillNoPaymentByIDTable(idTable);
-	        if (idBill == -1) {
-	            txtHD.setText("");
-	            txttotalPrice.setText("0");
-	            return;
-	        }
-	        txtHD.setText("HD00" + idBill);
-
-	        List<MenuDTO> menuList = MenuBLL.getListMenuByIDTable(idTable);
-	        double totalPrice = 0;
-	        int stt = 1;
-
-	        for (MenuDTO m : menuList) {
-	            Object[] row = {
-	                stt++,
-	                m.getNameProduct(),
-	                m.getQuantity(),
-	                String.format("%,.0f", m.getPriceBasic()),
-	                String.format("%,.0f", m.getTotalPrice())
-	            };
-	            modelBill.addRow(row);
-	            totalPrice += m.getTotalPrice();
-	        }
-
-
-	        txttotalPrice.setText(String.format("%,.0f", totalPrice));
-	    }
-
-	    private void hoverClickTable(JPanel clickedPanel) {
-
-	        // 🔁 Trả màu bàn cũ
-	        if (chosenTable != null) {
-	            TableDTO oldTable = (TableDTO) chosenTable.getClientProperty("TABLE");
-
-	            if (oldTable.getStatus() == 1) { // có người
-	                chosenTable.setBackground(new Color(250, 219, 216)); // hồng
-	            } else { // trống
-	                chosenTable.setBackground(new Color(213, 245, 227)); // xanh
-	            }
-	        }
-
-	        // 🎯 Tô màu bàn đang chọn
-	        clickedPanel.setBackground(new Color(173, 216, 230)); // LightBlue
-	        chosenTable = clickedPanel;
-	    }
-	    private void handleTableClick(JPanel pnlCard) {
-	        // 🔵 đổi màu bàn (tương đương hoverClickButton)
-	        hoverClickTable(pnlCard);
-	        // reset thông tin
-	        txtHD.setText("");
-	        txtBan.setText("");
-	        txttotalPrice.setText("0");
-	        chosenTable = pnlCard;
-
-	        // lấy DTO bàn
-	        TableDTO table = (TableDTO) pnlCard.getClientProperty("TABLE");
-	        int idTable = table.getID();
-
-	        // set bàn
-	        txtBan.setText(table.getNameTable());
-
-	        // trạng thái control
-	        btnThanhToan.setEnabled(false);
-	        // cbLoaiThucUong.setEnabled(true);  // nếu bạn khai báo global
-	        lstSanPham.setEnabled(true);
-
-	        // kiểm tra trạng thái bàn
-	        if (TableBLL.getStatusByIDTable(idTable) == 1) {
-	            int idBill = BillBLL.getIDBillNoPaymentByIDTable(idTable);
-	            if (idBill != -1) {
-	                btnThanhToan.setEnabled(true);
-	                showBill(idTable); // ❌ truyền table → dễ reset
-	            }
-	        }
-
-	    }
-	    private void loadTypeProduct() {
-
-	        cbLoaiThucUong.removeAllItems(); // clear combobox
-	  
-	    
-	        // load loại thức uống có trạng thái = 1
-	        List<TypeProductDTO> listType =
-	                TypeProductBLL.getListTypeProductByStatus(1);
-
-
-	        for (TypeProductDTO type : listType) {
-	            cbLoaiThucUong.addItem(type);
-	        }
-	    }
-
-	    
-	    private void loadSanPham(List<ProductDTO> listProduct) {
-	        modelSanPham.setRowCount(0); // clear table
-
-	        int stt = 1;
-	        for (ProductDTO p : listProduct) {
-	            Object[] row = {
-	                stt++,
-	                p.getNameProducts(),
-	                String.format("%,.0f VNĐ", p.getSalePrice()) // ✅ FIX Ở ĐÂY
-	            };
-	            modelSanPham.addRow(row);
-	        }
-	    }
-
-	    private TableDTO createAddBillByIDTable(ProductDTO product) {
-
-	        // 1️⃣ Lấy bàn đang chọn
-	        if (chosenTable == null) return null;
-
-	        TableDTO table = (TableDTO) chosenTable.getClientProperty("TABLE");
-	        int idTable = table.getID();
-
-	        // 2️⃣ Lấy hóa đơn chưa thanh toán theo bàn
-	        int idBill = BillBLL.getIDBillNoPaymentByIDTable(idTable);
-
-	        int idProduct = product.getID();
-	        int quantity = 1;
-
-	        // 3️⃣ Nếu chưa có hóa đơn → tạo mới
-	        if (idBill == -1) {
-	            BillBLL.insertBill(
-	                new Date(),
-	                0.0,
-	                String.valueOf(AppContext.taiKhoanDangNhap.getId()), // ✔ KHỚP String
-	                table.getID()
-	            );
-
-	            idBill = BillBLL.getIDBillMax();
-	        }
-
-	        // 4️⃣ Lấy số lượng sản phẩm hiện tại trong bill
-	        quantity = ChiTietBillBLL.getSoLuongSanPham(idBill, idProduct);
-
-	        // 5️⃣ Thêm / cập nhật chi tiết bill
-	        ChiTietBillBLL.insertChiTietBill(
-	                idBill,
-	                idProduct,
-	                quantity + 1
-	        );
-
-	        return table;
-	    }
-	    //=============================================================//
-	    private void handleSelectSanPham() { // Hàm này chạy chưa HOÀN CHỈNH=> KHI THAO TÁC CHỌN SẢN PHẨM TỪ lstSamPham nó ko nhảy qua lstBill
-
-	        int row = lstSanPham.getSelectedRow();
-	        if (row == -1) return;
-
-	        // ===== LẤY PRODUCT =====
-	        int productId = Integer.parseInt(modelSanPham.getValueAt(row, 0).toString());
-	        String name = modelSanPham.getValueAt(row, 1).toString();
-
-	        String priceStr = modelSanPham.getValueAt(row, 2).toString()
-	                .replace("VNĐ", "")
-	                .replace(",", "")
-	                .trim();
-
-	        double price = Double.parseDouble(priceStr);
-
-	        ProductDTO product = new ProductDTO(
-	                productId,
-	                name,
-	                price,
-	                0,
-	                1,
-	                0
-	        );
-
-	        // ===== CHƯA CHỌN BÀN =====
-	        if (chosenTable == null) {
-	            JOptionPane.showMessageDialog(
-	                    this,
-	                    "Bạn chưa chọn bàn để thêm thức uống!",
-	                    "Thông báo",
-	                    JOptionPane.WARNING_MESSAGE
-	            );
-	            return;
-	        }
-
-	        // ===== LẤY BÀN =====
-	        TableDTO table = (TableDTO) chosenTable.getClientProperty("TABLE");
-	        if (table == null) return;
-
-	        int idTable = table.getID();
-
-	        // ===== BÀN CHƯA CÓ HÓA ĐƠN =====
-	        if (TableBLL.getStatusByIDTable(idTable) == 0) {
-
-	            int kq = JOptionPane.showConfirmDialog(
-	                    this,
-	                    "Bạn đang chọn bàn mới.\nBạn có muốn tạo hóa đơn mới không?",
-	                    "Thông báo",
-	                    JOptionPane.OK_CANCEL_OPTION
-	            );
-
-	            if (kq != JOptionPane.OK_OPTION) return;
-
-	            TableBLL.updateStatusTable(1, idTable);
-
-	            BillBLL.insertBill(
-	                    new Date(),
-	                    0.0,
-	                    AppContext.taiKhoanDangNhap.getId(),
-	                    idTable
-	            );
-
-	            // 🔥 LẤY ID BILL VỪA TẠO
-	           	            btnThanhToan.setEnabled(true);
-	        }
-
-	        // ===== THÊM SẢN PHẨM =====
-	        createAddBillByIDTable(product);
-	        showBill(idTable);
-	        loadTable();
-	    }
-	    //============================================================================//
-	    private void btnLamMoiActionPerformed() {
-
-	        // ===== RESET THÔNG TIN HÓA ĐƠN =====
-	        txtHD.setText("");
-	        txtBan.setText("");
-	        txttotalPrice.setText("0");
-
-	        // ===== CLEAR BẢNG BILL =====
-	        modelBill.setRowCount(0);
-
-	        // ===== RESET BÀN ĐANG CHỌN =====
-	        chosenTable = null;
-
-	        // ===== DISABLE BUTTON =====
-	        btnThanhToan.setEnabled(false);
-
-	        // ===== RESET TÌM KIẾM / LOẠI SP =====
-	        txtTuKhoa.setText("");
-	        loadTypeProduct();      // tương đương _loadTypeProduct()
-
-	        // ===== LOAD LẠI DANH SÁCH BÀN =====
-	        loadTable();
-	  
-	    }
-	   
-
- }
-	
-	
+package presention.GUI;
+
+import business.BLL.ProductBLL;
+import business.BLL.TableBLL;
+import business.BLL.TypeProductBLL;
+import shared.DTO.ProductDTO;
+import shared.DTO.TableDTO;
+import shared.DTO.TypeProductDTO;
+
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
+
+public class FrmOrder extends JFrame {
+
+    // ===== TABLE =====
+	// đang tạo hóa đơn hay chưa
+	private boolean isOrdering = false;
+    private JPanel pnlTableWrap;
+    private TableDTO selectedTable;
+    private JPanel selectedTablePanel;
+
+    // ===== PRODUCT =====
+    private JPanel pnlProductWrap;
+    private JTextField txtSearchProduct;
+    private JComboBox<TypeProductDTO> cboTypeProduct;
+
+    // ===== ORDER =====
+    private JPanel pnlOrderList;
+    private JLabel lblBillId, lblTableName, lblTotalPrice;
+
+    private Map<Integer, List<OrderItem>> orderMap = new HashMap<>();
+
+    public FrmOrder() {
+        initUI();
+        loadTables();
+        loadTypeProduct();
+        cboTypeProduct.addActionListener(e -> searchProduct());
+        loadProducts();
+    }
+
+    private void initUI() {
+        setTitle("Quản lý Order");
+        setSize(1300, 750);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // ===== HEADER =====
+        JLabel lblHeader = new JLabel("ORDER", JLabel.CENTER);
+        lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        lblHeader.setOpaque(true);
+        lblHeader.setBackground(new Color(210, 180, 140));
+        lblHeader.setForeground(Color.WHITE);
+        lblHeader.setPreferredSize(new Dimension(0, 70));
+        add(lblHeader, BorderLayout.NORTH);
+
+        JPanel body = new JPanel(new BorderLayout());
+        add(body, BorderLayout.CENTER);
+
+        // ================= LEFT: TABLE =================
+        pnlTableWrap = new JPanel(new GridBagLayout());
+        pnlTableWrap.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        pnlTableWrap.setBackground(Color.WHITE);
+
+        JScrollPane spTable = new JScrollPane(
+                pnlTableWrap,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+
+        JPanel left = new JPanel(new BorderLayout());
+        left.setPreferredSize(new Dimension(460, 0));
+        left.add(spTable, BorderLayout.CENTER);
+
+        JButton btnRefresh = new JButton("Làm mới");
+        btnRefresh.setPreferredSize(new Dimension(0, 45));
+        btnRefresh.setBackground(new Color(139, 69, 19));
+        btnRefresh.setForeground(Color.WHITE);
+        btnRefresh.addActionListener(e -> loadTables());
+        left.add(btnRefresh, BorderLayout.SOUTH);
+
+        body.add(left, BorderLayout.WEST);
+
+        // ================= CENTER: ORDER =================
+        JPanel center = new JPanel(new BorderLayout());
+        center.setPreferredSize(new Dimension(360, 0));
+        center.setBorder(new LineBorder(Color.LIGHT_GRAY));
+
+        JLabel lblOrder = new JLabel("MÓN ĐÃ CHỌN");
+        lblOrder.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblOrder.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        center.add(lblOrder, BorderLayout.NORTH);
+
+        pnlOrderList = new JPanel();
+        pnlOrderList.setLayout(new BoxLayout(pnlOrderList, BoxLayout.Y_AXIS));
+        pnlOrderList.setBackground(Color.WHITE);
+
+        JScrollPane spOrder = new JScrollPane(pnlOrderList);
+        spOrder.setBorder(null);
+        center.add(spOrder, BorderLayout.CENTER);
+
+        JPanel bill = new JPanel(new GridLayout(4, 1, 5, 5));
+        bill.setBorder(
+        	    BorderFactory.createCompoundBorder(
+        	        new LineBorder(new Color(200, 200, 200)),
+        	        BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        	    )
+        	);
+        bill.setBackground(new Color(240, 240, 240));
+
+        lblBillId = new JLabel("Mã HĐ: ---");
+        lblTableName = new JLabel("Bàn: ---");
+        lblTotalPrice = new JLabel("Tổng tiền: 0 đ");
+        lblTotalPrice.setForeground(Color.RED);
+        lblTotalPrice.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+        JButton btnPay = new JButton("THANH TOÁN");
+        btnPay.setBackground(new Color(220, 53, 69)); 
+        btnPay.setForeground(Color.WHITE);
+        btnPay.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btnPay.setFocusPainted(false);
+        btnPay.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        btnPay.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnPay.addActionListener(e -> handlePay());
+
+
+        bill.add(lblBillId);
+        bill.add(lblTableName);
+        bill.add(lblTotalPrice);
+        bill.add(btnPay);
+
+        center.add(bill, BorderLayout.SOUTH);
+        body.add(center, BorderLayout.CENTER);
+
+     // ================= RIGHT: PRODUCT =================
+        JPanel right = new JPanel(new BorderLayout(10, 10));
+        right.setPreferredSize(new Dimension(480, 0));
+        right.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JLabel lblSP = new JLabel("SẢN PHẨM");
+        lblSP.setFont(new Font("Segoe UI", Font.BOLD, 18));
+
+        cboTypeProduct = new JComboBox<>();
+        txtSearchProduct = new JTextField();
+
+        JButton btnSearch = new JButton("Tìm");
+        btnSearch.addActionListener(e -> searchProduct());
+
+        JButton btnResetFilter = new JButton("Làm mới");
+        btnResetFilter.addActionListener(e -> resetProductFilter());
+
+        JPanel btnPanel = new JPanel(new GridLayout(1, 2, 5, 0));
+        btnPanel.add(btnSearch);
+        btnPanel.add(btnResetFilter);
+
+        JPanel filter = new JPanel(new BorderLayout(5, 5));
+        filter.add(cboTypeProduct, BorderLayout.WEST);
+        filter.add(txtSearchProduct, BorderLayout.CENTER);
+        filter.add(btnPanel, BorderLayout.EAST);
+
+        JPanel topRight = new JPanel(new BorderLayout(5, 5));
+        topRight.add(lblSP, BorderLayout.NORTH);
+        topRight.add(filter, BorderLayout.SOUTH);
+
+        right.add(topRight, BorderLayout.NORTH);
+
+        // ===== PRODUCT GRID: 3 SP / 1 DÒNG =====
+        pnlProductWrap = new JPanel();
+        pnlProductWrap.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 12));
+        pnlProductWrap.setBackground(Color.WHITE);
+        pnlProductWrap.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
+
+        JScrollPane spProduct = new JScrollPane(
+                pnlProductWrap,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        spProduct.getVerticalScrollBar().setUnitIncrement(16);
+        spProduct.setBorder(null);
+
+        right.add(spProduct, BorderLayout.CENTER);
+        body.add(right, BorderLayout.EAST);
+
+    }
+
+    // ================= TABLE =================
+    private void loadTables() {
+        pnlTableWrap.removeAll();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(7, 7, 7, 7);
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+
+        int col = 0, row = 0;
+
+        for (TableDTO t : TableBLL.getAllListTable()) {
+            gbc.gridx = col;
+            gbc.gridy = row;
+
+            pnlTableWrap.add(createTableCard(t), gbc);
+
+            col++;
+            if (col == 3) {
+                col = 0;
+                row++;
+            }
+        }
+
+        // ép layout dồn lên trên, không giãn
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.gridx = 0;
+        gbc.gridy = row + 1;
+        pnlTableWrap.add(Box.createGlue(), gbc);
+
+        pnlTableWrap.revalidate();
+        pnlTableWrap.repaint();
+    }
+
+
+    private JPanel createTableCard(TableDTO table) {
+        JPanel p = new JPanel();
+        p.setPreferredSize(new Dimension(135, 135));
+        p.setLayout(new BorderLayout());
+        p.setBorder(new LineBorder(Color.GRAY, 1));
+
+        boolean isBusy = table.getStatus() == 1;
+
+        p.setBackground(isBusy
+                ? new Color(255, 220, 220)
+                : new Color(220, 255, 235));
+
+        JLabel name = new JLabel(table.getNameTable(), JLabel.CENTER);
+        name.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        JLabel icon = new JLabel("☕", JLabel.CENTER);
+        icon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 40));
+
+        JLabel status = new JLabel(
+                isBusy ? "Có người" : "Trống",
+                JLabel.CENTER
+        );
+        status.setForeground(isBusy ? Color.RED : new Color(0, 130, 0));
+
+        p.add(name, BorderLayout.NORTH);
+        p.add(icon, BorderLayout.CENTER);
+        p.add(status, BorderLayout.SOUTH);
+
+        // ===== BÀN CÓ NGƯỜI → KHÓA CỨNG =====
+        if (isBusy) {
+            p.setCursor(Cursor.getDefaultCursor());
+            return p; // ❌ KHÔNG GẮN MOUSE LISTENER
+        }
+
+        // ===== CHỈ BÀN TRỐNG MỚI GẮN CLICK =====
+        p.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        p.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                // đang tạo hóa đơn → không đổi bàn
+                if (isOrdering && selectedTable != null
+                        && table.getID() != selectedTable.getID()) {
+
+                    JOptionPane.showMessageDialog(
+                            FrmOrder.this,
+                            "Đang tạo hóa đơn cho bàn hiện tại!",
+                            "Cảnh báo",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
+
+                if (selectedTablePanel != null) {
+                    selectedTablePanel.setBorder(new LineBorder(Color.GRAY, 1));
+                }
+
+                selectedTablePanel = p;
+                selectedTable = table;
+                p.setBorder(new LineBorder(Color.BLUE, 2));
+                refreshOrderList();
+            }
+        });
+
+        return p;
+    }
+
+
+
+    // ================= PRODUCT =================
+    private void resetProductFilter() {
+        // reset ô tìm kiếm
+        txtSearchProduct.setText("");
+
+        // reset loại sản phẩm về "Tất cả"
+        if (cboTypeProduct.getItemCount() > 0) {
+            cboTypeProduct.setSelectedIndex(0);
+        }
+
+        // load lại toàn bộ sản phẩm
+        loadProducts();
+    }
+
+    private void loadTypeProduct() {
+        cboTypeProduct.removeAllItems();
+        cboTypeProduct.addItem(new TypeProductDTO(0, "Tất cả", 1));
+        for (TypeProductDTO t : TypeProductBLL.getListTypeProductByStatus(1))
+            cboTypeProduct.addItem(t);
+    }
+
+    private void loadProducts() {
+        pnlProductWrap.removeAll();
+
+        for (ProductDTO p : ProductBLL.getAllListProduct()) {
+            pnlProductWrap.add(createProductCard(p));
+        }
+
+        pnlProductWrap.revalidate();
+        pnlProductWrap.repaint();
+    }
+
+    private void searchProduct() {
+        pnlProductWrap.removeAll();
+
+        String keyword = txtSearchProduct.getText().trim().toLowerCase();
+        TypeProductDTO type = (TypeProductDTO) cboTypeProduct.getSelectedItem();
+
+        for (ProductDTO p : ProductBLL.getAllListProduct()) {
+
+            // lọc loại
+            if (type != null && type.getId() != 0) {
+                if (p.getIDTypeProduct() != type.getId()) continue;
+            }
+
+            // lọc tên
+            if (!keyword.isEmpty()) {
+                if (!p.getNameProducts().toLowerCase().contains(keyword)) continue;
+            }
+
+            pnlProductWrap.add(createProductCard(p));
+        }
+
+        pnlProductWrap.revalidate();
+        pnlProductWrap.repaint();
+    }
+
+    private JPanel createProductCard(ProductDTO p) {
+
+        JPanel card = new JPanel(new BorderLayout());
+        card.setPreferredSize(new Dimension(135, 190));
+        card.setBackground(Color.WHITE);
+        card.setBorder(new LineBorder(new Color(220, 220, 220), 1, true));
+
+        // ===== HÌNH =====
+        JLabel imgLabel = new JLabel();
+        imgLabel.setHorizontalAlignment(JLabel.CENTER);
+        imgLabel.setPreferredSize(new Dimension(140, 100));
+
+        try {
+            ImageIcon icon = new ImageIcon(p.getImg());
+            Image img = icon.getImage().getScaledInstance(140, 100, Image.SCALE_SMOOTH);
+            imgLabel.setIcon(new ImageIcon(img));
+        } catch (Exception e) {
+            imgLabel.setText("No Image");
+        }
+
+        // ===== TÊN + GIÁ =====
+        JLabel name = new JLabel(
+                "<html><center>" + p.getNameProducts() + "</center></html>",
+                JLabel.CENTER
+        );
+        name.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        double price = p.getSalePrice() > 0 ? p.getSalePrice() : p.getPriceBasic();
+        JLabel lblPrice = new JLabel(
+                String.format("%,.0f đ", price),
+                JLabel.CENTER
+        );
+        lblPrice.setForeground(new Color(0, 140, 0));
+        lblPrice.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+        JPanel bottom = new JPanel(new GridLayout(2, 1));
+        bottom.setOpaque(false);
+        bottom.add(name);
+        bottom.add(lblPrice);
+
+        card.add(imgLabel, BorderLayout.NORTH);
+        card.add(bottom, BorderLayout.CENTER);
+
+        // ===== CLICK =====
+        card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        card.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (selectedTable == null) {
+                    JOptionPane.showMessageDialog(FrmOrder.this, "Chọn bàn trước!");
+                    return;
+                }
+                addProductToOrder(p);
+            }
+        });
+
+        return card;
+    }
+
+
+    // ================= ORDER =================
+    private void addProductToOrder(ProductDTO p) {
+        int id = selectedTable.getID();
+
+        // bắt đầu tạo hóa đơn
+        isOrdering = true;
+
+        orderMap.putIfAbsent(id, new ArrayList<>());
+
+        for (OrderItem it : orderMap.get(id)) {
+            if (it.product.getID() == p.getID()) {
+                it.quantity++;
+                refreshOrderList();
+                return;
+            }
+        }
+        orderMap.get(id).add(new OrderItem(p));
+        refreshOrderList();
+    }
+
+    private void refreshOrderList() {
+        pnlOrderList.removeAll();
+
+        if (selectedTable == null) {
+            lblBillId.setText("Mã HĐ: ---");
+            lblTableName.setText("Bàn: ---");
+            lblTotalPrice.setText("Tổng tiền: 0 đ");
+            isOrdering = false;
+            return;
+        }
+
+        double total = 0;
+        List<OrderItem> list = orderMap.get(selectedTable.getID());
+
+        if (list != null && !list.isEmpty()) {
+            for (OrderItem it : list) {
+                pnlOrderList.add(createOrderRow(it));
+                total += it.getTotal();
+            }
+            // ===== đang có món → khóa bàn =====
+            isOrdering = true;
+        } else {
+            // ===== không còn món → mở khóa =====
+            isOrdering = false;
+        }
+
+        lblBillId.setText("Mã HĐ: HD-" + selectedTable.getID());
+        lblTableName.setText("Bàn: " + selectedTable.getNameTable());
+        lblTotalPrice.setText(String.format("Tổng tiền: %,.0f đ", total));
+
+        pnlOrderList.revalidate();
+        pnlOrderList.repaint();
+    }
+    private void handlePay() {
+
+        // chưa chọn bàn
+        if (selectedTable == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn bàn!");
+            return;
+        }
+
+        List<OrderItem> list = orderMap.get(selectedTable.getID());
+
+        // chưa có món
+        if (list == null || list.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Chưa có món để thanh toán!");
+            return;
+        }
+
+        // hỏi xác nhận
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Xác nhận thanh toán cho " + selectedTable.getNameTable() + "?",
+                "Thanh toán",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        // mở form thanh toán
+        FrmPayment frm = new FrmPayment(this, selectedTable, list);
+        frm.setVisible(true);
+
+        // ===== SAU KHI ĐÓNG FORM THANH TOÁN =====
+        // reset order
+        orderMap.remove(selectedTable.getID());
+        selectedTable = null;
+
+        // mở khóa bàn
+        isOrdering = false;
+        selectedTablePanel = null;
+
+        refreshOrderList();
+        loadTables();
+    }
+
+
+    private JPanel createOrderRow(OrderItem it) {
+        JPanel row = new JPanel(new BorderLayout(5, 5));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
+        row.setBorder(new LineBorder(new Color(220, 220, 220)));
+        row.setBackground(Color.WHITE);
+
+        // ===== TÊN + GIÁ =====
+        double priceOne = it.product.getSalePrice() > 0
+                ? it.product.getSalePrice()
+                : it.product.getPriceBasic();
+
+        JLabel lblName = new JLabel(it.product.getNameProducts());
+        lblName.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        JLabel lblPrice = new JLabel(
+                String.format("%,.0f đ", it.getTotal())
+        );
+        lblPrice.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblPrice.setForeground(new Color(0, 140, 0));
+
+        JPanel left = new JPanel(new GridLayout(2, 1));
+        left.setOpaque(false);
+        left.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+        left.add(lblName);
+        left.add(lblPrice);
+
+     // ===== NÚT  -   SỐ LƯỢNG   +  =====
+        Dimension btnSize = new Dimension(36, 36);
+        Font btnFont = new Font("Segoe UI", Font.BOLD, 16);
+
+        // ----- NÚT GIẢM -----
+        JButton btnMinus = new JButton("-");
+        btnMinus.setPreferredSize(btnSize);
+        btnMinus.setMinimumSize(btnSize);
+        btnMinus.setMaximumSize(btnSize);
+        btnMinus.setFont(btnFont);
+        btnMinus.setMargin(new Insets(0, 0, 0, 0));
+        btnMinus.setFocusPainted(false);
+        btnMinus.setBackground(new Color(220, 53, 69)); // đỏ
+        btnMinus.setForeground(Color.WHITE);
+        btnMinus.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // ----- SỐ LƯỢNG -----
+        JLabel lblQty = new JLabel(String.valueOf(it.quantity), JLabel.CENTER);
+        lblQty.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblQty.setPreferredSize(new Dimension(36, 36));
+        lblQty.setBorder(new LineBorder(new Color(200, 200, 200)));
+        lblQty.setOpaque(true);
+        lblQty.setBackground(Color.WHITE);
+
+        // ----- NÚT TĂNG -----
+        JButton btnPlus = new JButton("+");
+        btnPlus.setPreferredSize(btnSize);
+        btnPlus.setMinimumSize(btnSize);
+        btnPlus.setMaximumSize(btnSize);
+        btnPlus.setFont(btnFont);
+        btnPlus.setMargin(new Insets(0, 0, 0, 0));
+        btnPlus.setFocusPainted(false);
+        btnPlus.setBackground(new Color(40, 167, 69)); // xanh
+        btnPlus.setForeground(Color.WHITE);
+        btnPlus.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // ===== SỰ KIỆN =====
+        btnMinus.addActionListener(e -> {
+            it.quantity--;
+            if (it.quantity <= 0) {
+                orderMap.get(selectedTable.getID()).remove(it);
+            }
+            refreshOrderList();
+        });
+
+        btnPlus.addActionListener(e -> {
+            it.quantity++;
+            refreshOrderList();
+        });
+
+        // ===== PANEL PHẢI =====
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 6));
+        right.setOpaque(false);
+        right.add(btnMinus);
+        right.add(lblQty);
+        right.add(btnPlus);
+
+        row.add(left, BorderLayout.CENTER);
+        row.add(right, BorderLayout.EAST);
+        return row;
+    }
+
+    class OrderItem {
+        ProductDTO product;
+        int quantity = 1;
+        OrderItem(ProductDTO p) { product = p; }
+        double getTotal() {
+            double price = product.getSalePrice() > 0 ? product.getSalePrice() : product.getPriceBasic();
+            return price * quantity;
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new FrmOrder().setVisible(true));
+    }
+}

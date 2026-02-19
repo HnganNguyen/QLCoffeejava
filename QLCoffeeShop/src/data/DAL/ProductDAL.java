@@ -229,4 +229,58 @@ public class ProductDAL {
         }
         return list;
     }
+    
+
+ // Lấy sản phẩm theo loại (đang bán)
+ public static List<ProductDTO> getProductByType(int typeId) {
+     List<ProductDTO> list = new ArrayList<>();
+
+     String sql = """
+         SELECT * FROM SANPHAM
+         WHERE MALOAI = ? AND TRANGTHAI = 1
+     """;
+
+     try (Connection conn = MySQLConnect.getConnection();
+          PreparedStatement ps = conn.prepareStatement(sql)) {
+
+         ps.setInt(1, typeId);
+         ResultSet rs = ps.executeQuery();
+
+         while (rs.next()) {
+             list.add(new ProductDTO(rs));
+         }
+
+     } catch (Exception e) {
+         e.printStackTrace();
+     }
+     return list;
+ }
+
+ // Tìm sản phẩm theo tên + loại
+ public static List<ProductDTO> searchProductByNameAndType(String keyword, int typeId) {
+     List<ProductDTO> list = new ArrayList<>();
+
+     String sql = """
+         SELECT * FROM SANPHAM
+         WHERE TRANGTHAI = 1
+           AND MALOAI = ?
+           AND TENSP LIKE ?
+     """;
+
+     try (Connection conn = MySQLConnect.getConnection();
+          PreparedStatement ps = conn.prepareStatement(sql)) {
+
+         ps.setInt(1, typeId);
+         ps.setString(2, "%" + keyword + "%");
+
+         ResultSet rs = ps.executeQuery();
+         while (rs.next()) {
+             list.add(new ProductDTO(rs));
+         }
+
+     } catch (Exception e) {
+         e.printStackTrace();
+     }
+     return list;
+ }
 }

@@ -17,8 +17,6 @@ public class TypeProductBLL {
         public static List<TypeProductDTO> getListTypeProductByStatus(int status) {
             return TypeProductDAL.getListTypeProductByStatus(status);
         }
-    
-
 
     // 🔹 Thêm loại sản phẩm
     public static boolean insertTypeProduct(TypeProductDTO typeProduct) {
