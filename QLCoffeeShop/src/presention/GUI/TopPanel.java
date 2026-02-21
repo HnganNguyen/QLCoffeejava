@@ -86,8 +86,10 @@ public class TopPanel extends JPanel {
         pnlHeader.add(pnlRight, BorderLayout.EAST);
 
         /* ================= MENU ================= */
-        JPanel pnlMenu = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 8));
+        JPanel pnlMenu = new JPanel();
+        pnlMenu.setLayout(new GridLayout(1, 8, 10, 5));
         pnlMenu.setBackground(new Color(225, 205, 180));
+
 
         pnlMenu.add(createMenuButton("TRANG CHỦ", "HOME", active));
         pnlMenu.add(createMenuButton("LOẠI SẢN PHẨM", "TYPE", active));
@@ -96,10 +98,16 @@ public class TopPanel extends JPanel {
         pnlMenu.add(createMenuButton("NGUYÊN LIỆU", "INGREDIENT", active));
 
         if (role.equalsIgnoreCase("ADMIN")) {
-            pnlMenu.add(createMenuButton("Tài khoản", "ACCOUNT", active));
+            pnlMenu.add(createMenuButton("TÀI KHOẢN", "ACCOUNT", active));
+        }
+        if (role.equalsIgnoreCase("ADMIN")) {
+            pnlMenu.add(createMenuButton("THỐNG KÊ", "STATISTIC", active));
         }
 
-        JPanel pnlTop = new JPanel(new BorderLayout());
+
+        JPanel pnlTop = new JPanel(new BorderLayout(0, 5));
+        pnlMenu.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+
         pnlTop.add(pnlHeader, BorderLayout.NORTH);
         pnlTop.add(pnlMenu, BorderLayout.SOUTH);
 
@@ -126,6 +134,8 @@ public class TopPanel extends JPanel {
                 case "TABLE" -> new TableGUI(username, role).setVisible(true);
                 case "ACCOUNT" -> new TaiKhoanGUI(username, role).setVisible(true);
                 case "INGREDIENT" -> new NguyenLieuGUI(username, role).setVisible(true);
+                case "STATISTIC" -> new ThongKeGUI(username, role).setVisible(true);
+
             }
         });
 

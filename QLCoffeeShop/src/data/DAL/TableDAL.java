@@ -27,15 +27,15 @@ public class TableDAL {
     }
 
     // ================= UPDATE TRẠNG THÁI BÀN (FIX LỖI Ở ĐÂY) =================
-    public static boolean updateStatusTable(int status, int id) {
+ // ================= UPDATE TRẠNG THÁI BÀN =================
+    public static boolean updateStatusTable(int id, int status) {
         String sql = "{CALL USP_UPDATETRANGTHAITABLE(?, ?)}";
 
         try (Connection conn = MySQLConnect.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
 
-            // ⚠️ THỨ TỰ ĐÚNG: (ID, STATUS)
-            cs.setInt(1, id);      // ✅ ID BÀN
-            cs.setInt(2, status);  // ✅ TRẠNG THÁI
+            cs.setInt(1, id);      // ID BÀN
+            cs.setInt(2, status);  // TRẠNG THÁI
 
             return cs.executeUpdate() > 0;
 

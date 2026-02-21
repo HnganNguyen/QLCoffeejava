@@ -13,8 +13,8 @@ public class TableBLL {
         return TableDAL.getAllListTable();
     }
 
-    public static boolean updateStatusTable(int status, int id) {
-        return TableDAL.updateStatusTable(status, id);
+    public static boolean updateStatusTable(int id, int status) {
+        return TableDAL.updateStatusTable(id, status);
     }
 
     public static boolean insertTable(TableDTO table) {
