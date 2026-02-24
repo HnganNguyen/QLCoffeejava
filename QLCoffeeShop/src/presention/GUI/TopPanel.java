@@ -103,6 +103,9 @@ public class TopPanel extends JPanel {
         if (role.equalsIgnoreCase("ADMIN")) {
             pnlMenu.add(createMenuButton("THỐNG KÊ", "STATISTIC", active));
         }
+        if (role.equalsIgnoreCase("ADMIN")) {
+        	pnlMenu.add(createMenuButton("TÍNH LƯƠNG", "SALARY", active));
+        }
 
 
         JPanel pnlTop = new JPanel(new BorderLayout(0, 5));
@@ -118,7 +121,7 @@ public class TopPanel extends JPanel {
     private JButton createMenuButton(String text, String key, String active) {
 
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 13));
+        btn.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 12));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setForeground(Color.WHITE);
@@ -135,7 +138,7 @@ public class TopPanel extends JPanel {
                 case "ACCOUNT" -> new TaiKhoanGUI(username, role).setVisible(true);
                 case "INGREDIENT" -> new NguyenLieuGUI(username, role).setVisible(true);
                 case "STATISTIC" -> new ThongKeGUI(username, role).setVisible(true);
-
+                case "SALARY" -> new TinhLuongGUI(username, role).setVisible(true);
             }
         });
 

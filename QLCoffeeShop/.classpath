@@ -6,13 +6,21 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/CaNhan/KNNN/SetMySQL/mysql-connector-java-8.0.22.jar">
+	<classpathentry kind="lib" path="lib/itextpdf-5.5.13.3.jar"/>
+	<classpathentry kind="lib" path="D:/Eclipse-workspace/JDBCdriver/jcalendar-1.4.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/itextpdf-5.5.13.3.jar"/>
-	<classpathentry kind="lib" path="D:/CaNhan/KNNN/SetMySQL/jcalendar-1.4.jar"/>
-	<classpathentry kind="lib" path="D:/CaNhan/KNNN/SetMySQL/jfreechart-1.5.3.jar"/>
+	<classpathentry kind="lib" path="D:/Eclipse-workspace/JDBCdriver/jfreechart-1.5.3.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="D:/Eclipse-workspace/JDBCdriver/mysql-connector-j-9.5.0.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

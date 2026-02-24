@@ -3,8 +3,6 @@ package presention.GUI;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.jfree.chart.*;
 import org.jfree.chart.plot.PlotOrientation;
@@ -12,6 +10,9 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 import com.toedter.calendar.JDateChooser;
+
+
+import java.io.FileOutputStream;
 
 public class ThongKeGUI extends JFrame {
 
@@ -34,8 +35,10 @@ public class ThongKeGUI extends JFrame {
 
         add(new TopPanel(this, "STATISTIC", username, role), BorderLayout.NORTH);
 
-        JPanel topFilter = new JPanel();
-        topFilter.setBorder(BorderFactory.createTitledBorder("Bộ lọc"));
+        // ===== FILTER PANEL =====
+        JPanel topFilter = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        topFilter.setBorder(BorderFactory.createTitledBorder("Bộ lọc thống kê"));
+        topFilter.setBackground(Color.WHITE);
 
         cboType = new JComboBox<>(new String[]{
                 "Doanh thu theo ngày",
@@ -43,26 +46,39 @@ public class ThongKeGUI extends JFrame {
                 "Sản phẩm bán chạy",
                 "Số hóa đơn"
         });
+        cboType.setPreferredSize(new Dimension(200, 30));
 
         dateFrom = new JDateChooser();
+        dateFrom.setPreferredSize(new Dimension(130, 30));
+
         dateTo = new JDateChooser();
+        dateTo.setPreferredSize(new Dimension(130, 30));
 
         JButton btnFilter = new JButton("Lọc");
+        btnFilter.setBackground(new Color(33,150,243));
+        btnFilter.setForeground(Color.WHITE);
 
-        topFilter.add(new JLabel("Loại thống kê:"));
+        JButton btnExport = new JButton("Xuất Excel");
+        btnExport.setBackground(new Color(76,175,80));
+        btnExport.setForeground(Color.WHITE);
+
+        topFilter.add(new JLabel("Loại:"));
         topFilter.add(cboType);
-        topFilter.add(new JLabel("Từ ngày:"));
+        topFilter.add(new JLabel("Từ:"));
         topFilter.add(dateFrom);
-        topFilter.add(new JLabel("Đến ngày:"));
+        topFilter.add(new JLabel("Đến:"));
         topFilter.add(dateTo);
         topFilter.add(btnFilter);
+        topFilter.add(btnExport);
 
         add(topFilter, BorderLayout.SOUTH);
 
         chartContainer = new JPanel(new BorderLayout());
+        chartContainer.setBackground(Color.WHITE);
         add(chartContainer, BorderLayout.CENTER);
 
         btnFilter.addActionListener(e -> loadChart());
+        btnExport.addActionListener(e -> exportToExcel());
 
         loadChart();
     }
@@ -94,20 +110,7 @@ public class ThongKeGUI extends JFrame {
         chartContainer.repaint();
     }
 
-    private String getDateCondition() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-        if (dateFrom.getDate() == null || dateTo.getDate() == null) {
-            return "";
-        }
-
-        String from = sdf.format(dateFrom.getDate());
-        String to = sdf.format(dateTo.getDate());
-
-        return " AND DATE(NGAYTAO) BETWEEN '" + from + "' AND '" + to + "' ";
-    }
-
-    /* ================= DOANH THU THEO NGÀY ================= */
+    /* ================= DOANH THU NGÀY ================= */
 
     private void loadRevenueByDay() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -115,22 +118,30 @@ public class ThongKeGUI extends JFrame {
         try (Connection conn = getConnection()) {
 
             String sql = """
-                    SELECT DATE(NGAYTAO) AS NGAY,
-                           SUM(TONGTIEN) AS DOANHTHU
+                    SELECT DATE(NGAYTAO) NGAY, SUM(TONGTIEN) DOANHTHU
                     FROM hoadon
                     WHERE TRANGTHAI = 1
-                    """ + getDateCondition() +
-                    " GROUP BY DATE(NGAYTAO) ORDER BY NGAY";
+                    """;
+
+            if (dateFrom.getDate() != null && dateTo.getDate() != null) {
+                sql += " AND DATE(NGAYTAO) BETWEEN ? AND ? ";
+            }
+
+            sql += " GROUP BY DATE(NGAYTAO) ORDER BY NGAY";
 
             PreparedStatement ps = conn.prepareStatement(sql);
+
+            if (dateFrom.getDate() != null && dateTo.getDate() != null) {
+                ps.setDate(1, new java.sql.Date(dateFrom.getDate().getTime()));
+                ps.setDate(2, new java.sql.Date(dateTo.getDate().getTime()));
+            }
+
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                dataset.addValue(
-                        rs.getDouble("DOANHTHU"),
+                dataset.addValue(rs.getDouble("DOANHTHU"),
                         "Doanh thu",
-                        rs.getString("NGAY")
-                );
+                        rs.getString("NGAY"));
             }
 
         } catch (Exception e) {
@@ -146,10 +157,13 @@ public class ThongKeGUI extends JFrame {
                 false, true, false
         );
 
+        chart.setBackgroundPaint(Color.WHITE);
+        chart.getPlot().setBackgroundPaint(new Color(245,245,245));
+
         chartContainer.add(new ChartPanel(chart), BorderLayout.CENTER);
     }
 
-    /* ================= DOANH THU THEO THÁNG ================= */
+    /* ================= DOANH THU THÁNG ================= */
 
     private void loadRevenueByMonth() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -157,41 +171,51 @@ public class ThongKeGUI extends JFrame {
         try (Connection conn = getConnection()) {
 
             String sql = """
-                    SELECT MONTH(NGAYTAO) AS THANG,
-                           YEAR(NGAYTAO) AS NAM,
-                           SUM(TONGTIEN) AS DOANHTHU
+                    SELECT MONTH(NGAYTAO) THANG,
+                           YEAR(NGAYTAO) NAM,
+                           IFNULL(SUM(TONGTIEN),0) DOANHTHU
                     FROM hoadon
                     WHERE TRANGTHAI = 1
-                    """ + getDateCondition() +
-                    " GROUP BY YEAR(NGAYTAO), MONTH(NGAYTAO)";
+                    GROUP BY YEAR(NGAYTAO), MONTH(NGAYTAO)
+                    ORDER BY NAM, THANG
+                    """;
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                String label = rs.getInt("THANG") + "/" + rs.getInt("NAM");
-                dataset.addValue(
-                        rs.getDouble("DOANHTHU"),
-                        "Doanh thu",
-                        label
-                );
+                int thang = rs.getInt("THANG");
+                int nam = rs.getInt("NAM");
+                double doanhthu = rs.getDouble("DOANHTHU");
+
+                System.out.println("DEBUG MONTH: " + thang + "/" + nam + " = " + doanhthu);
+
+                dataset.addValue(doanhthu, "Doanh thu", thang + "/" + nam);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        JFreeChart chart = ChartFactory.createLineChart(
+        JFreeChart chart = ChartFactory.createBarChart(
                 "Doanh thu theo tháng",
                 "Tháng",
                 "Doanh thu",
-                dataset
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false
         );
 
+        chart.setBackgroundPaint(Color.WHITE);
+        chart.getPlot().setBackgroundPaint(new Color(245,245,245));
+
+        chartContainer.removeAll();
         chartContainer.add(new ChartPanel(chart), BorderLayout.CENTER);
+        chartContainer.revalidate();
+        chartContainer.repaint();
     }
 
-    /* ================= SẢN PHẨM BÁN CHẠY ================= */
+    /* ================= TOP SẢN PHẨM ================= */
 
     private void loadBestSeller() {
         DefaultPieDataset dataset = new DefaultPieDataset();
@@ -200,22 +224,22 @@ public class ThongKeGUI extends JFrame {
 
             String sql = """
                     SELECT sp.TENSANPHAM,
-                           SUM(ct.SOLUONG) AS TONGSL
+                           SUM(ct.SOLUONG) TONGSL
                     FROM chitiethoadon ct
                     JOIN hoadon hd ON ct.MAHOADON = hd.MA
                     JOIN sanpham sp ON ct.MASANPHAM = sp.MA
                     WHERE hd.TRANGTHAI = 1
-                    """ + getDateCondition() +
-                    " GROUP BY sp.TENSANPHAM ORDER BY TONGSL DESC LIMIT 5";
+                    GROUP BY sp.TENSANPHAM
+                    ORDER BY TONGSL DESC
+                    LIMIT 5
+                    """;
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                dataset.setValue(
-                        rs.getString("TENSANPHAM"),
-                        rs.getDouble("TONGSL")
-                );
+                dataset.setValue(rs.getString("TENSANPHAM"),
+                        rs.getDouble("TONGSL"));
             }
 
         } catch (Exception e) {
@@ -239,22 +263,21 @@ public class ThongKeGUI extends JFrame {
         try (Connection conn = getConnection()) {
 
             String sql = """
-                    SELECT DATE(NGAYTAO) AS NGAY,
-                           COUNT(MA) AS SOHOADON
+                    SELECT DATE(NGAYTAO) NGAY,
+                           COUNT(MA) SOHOADON
                     FROM hoadon
                     WHERE TRANGTHAI = 1
-                    """ + getDateCondition() +
-                    " GROUP BY DATE(NGAYTAO)";
+                    GROUP BY DATE(NGAYTAO)
+                    ORDER BY NGAY
+                    """;
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                dataset.addValue(
-                        rs.getInt("SOHOADON"),
+                dataset.addValue(rs.getInt("SOHOADON"),
                         "Số hóa đơn",
-                        rs.getString("NGAY")
-                );
+                        rs.getString("NGAY"));
             }
 
         } catch (Exception e) {
@@ -269,5 +292,84 @@ public class ThongKeGUI extends JFrame {
         );
 
         chartContainer.add(new ChartPanel(chart), BorderLayout.CENTER);
+    }
+
+    /* ================= XUẤT EXCEL ================= */
+
+    private void exportToExcel() {
+        try (Connection conn = getConnection()) {
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn nơi lưu file CSV");
+
+            if (fileChooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+                return;
+
+            String filePath = fileChooser.getSelectedFile().getAbsolutePath() + ".csv";
+
+            String selected = cboType.getSelectedItem().toString();
+            String sql = "";
+
+            if (selected.equals("Doanh thu theo ngày")) {
+                sql = """
+                        SELECT DATE(NGAYTAO) NGAY,
+                               SUM(TONGTIEN) GIATRI
+                        FROM hoadon
+                        WHERE TRANGTHAI = 1
+                        GROUP BY DATE(NGAYTAO)
+                        ORDER BY NGAY
+                        """;
+            } else if (selected.equals("Doanh thu theo tháng")) {
+                sql = """
+                        SELECT CONCAT(MONTH(NGAYTAO), '/', YEAR(NGAYTAO)) NGAY,
+                               SUM(TONGTIEN) GIATRI
+                        FROM hoadon
+                        WHERE TRANGTHAI = 1
+                        GROUP BY YEAR(NGAYTAO), MONTH(NGAYTAO)
+                        ORDER BY YEAR(NGAYTAO), MONTH(NGAYTAO)
+                        """;
+            } else if (selected.equals("Số hóa đơn")) {
+                sql = """
+                        SELECT DATE(NGAYTAO) NGAY,
+                               COUNT(MA) GIATRI
+                        FROM hoadon
+                        WHERE TRANGTHAI = 1
+                        GROUP BY DATE(NGAYTAO)
+                        ORDER BY NGAY
+                        """;
+            } else {
+                sql = """
+                        SELECT sp.TENSANPHAM NGAY,
+                               SUM(ct.SOLUONG) GIATRI
+                        FROM chitiethoadon ct
+                        JOIN hoadon hd ON ct.MAHOADON = hd.MA
+                        JOIN sanpham sp ON ct.MASANPHAM = sp.MA
+                        WHERE hd.TRANGTHAI = 1
+                        GROUP BY sp.TENSANPHAM
+                        ORDER BY GIATRI DESC
+                        LIMIT 5
+                        """;
+            }
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            java.io.PrintWriter writer = new java.io.PrintWriter(filePath, "UTF-8");
+
+            // Header
+            writer.println("Ten/Ngay,GiaTri");
+
+            while (rs.next()) {
+                writer.println(rs.getString("NGAY") + "," + rs.getDouble("GIATRI"));
+            }
+
+            writer.close();
+
+            JOptionPane.showMessageDialog(this, "Xuất CSV thành công!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Xuất CSV thất bại!");
+        }
     }
 }

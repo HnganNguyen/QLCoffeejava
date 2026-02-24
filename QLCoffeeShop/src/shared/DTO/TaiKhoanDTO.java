@@ -83,4 +83,8 @@ public class TaiKhoanDTO {
     public boolean isNhanVien() {
         return quyen == 0;
     }
+    @Override
+    public String toString() {
+        return tenTK;   // hiển thị tên nhân viên
+    }
 }
