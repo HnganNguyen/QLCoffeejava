@@ -86,7 +86,7 @@ public class SelectRoleGUI extends JFrame {
 
         btnSale.addActionListener(e -> {
             dispose();
-            new FrmOrder ().setVisible(true);
+            new FrmOrder (tk).setVisible(true);
         });
 
         pnlCenter.add(btnManage);

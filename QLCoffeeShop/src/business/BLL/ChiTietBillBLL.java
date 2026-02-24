@@ -30,4 +30,13 @@ public class ChiTietBillBLL {
     public static List<ChiTietBillDTO> getListProductByIDBill(int idBill) {
         return ChiTietDAL.getListProductByIDBill(idBill);
     }
+    
+    public static void insertChiTietBill(ChiTietBillDTO ct, double gia) {
+        ChiTietDAL.insertChiTietBill(
+            ct.getMaBill(),
+            ct.getIdProduct(),
+            ct.getSoLuong(),
+            gia
+        );
+    }
 }

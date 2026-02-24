@@ -57,4 +57,7 @@ public class BillBLL {
         return BillDAL.getIDBillByIDTable(idTable);
     }
 
+    public static int insertBill(BillDTO bill) {
+        return BillDAL.insertBill(bill);
+    }
 }

@@ -1,5 +1,6 @@
 package business.BLL;
 
+
 import java.util.List;
 import data.DAL.TableDAL;
 import shared.DTO.TableDTO;
@@ -37,7 +38,9 @@ public class TableBLL {
         return TableDAL.getListTableHaveStatusZero();
     }
 
-	
+    public static void updateTableStatus(int idTable, int status) {
+        TableDAL.updateTableStatus(idTable, status);
+    }
 
 	
 }
