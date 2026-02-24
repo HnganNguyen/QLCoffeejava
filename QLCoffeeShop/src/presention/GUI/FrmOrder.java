@@ -6,6 +6,7 @@ import business.BLL.TypeProductBLL;
 import shared.DTO.ProductDTO;
 import shared.DTO.TableDTO;
 import shared.DTO.TypeProductDTO;
+import shared.DTO.TaiKhoanDTO;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -16,7 +17,7 @@ import java.util.*;
 import java.util.List;
 
 public class FrmOrder extends JFrame {
-
+	private TaiKhoanDTO tk;
     // ===== TABLE =====
 	// đang tạo hóa đơn hay chưa
 	private boolean isOrdering = false;
@@ -35,7 +36,9 @@ public class FrmOrder extends JFrame {
 
     private Map<Integer, List<OrderItem>> orderMap = new HashMap<>();
 
-    public FrmOrder() {
+    public FrmOrder(TaiKhoanDTO tk) {
+    	this.tk = tk;
+    	
         initUI();
         loadTables();
         loadTypeProduct();
@@ -50,14 +53,30 @@ public class FrmOrder extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // ===== HEADER =====
+     // ===== HEADER =====
+        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader.setPreferredSize(new Dimension(0, 70));
+        pnlHeader.setBackground(new Color(210, 180, 140));
+
         JLabel lblHeader = new JLabel("ORDER", JLabel.CENTER);
         lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblHeader.setOpaque(true);
-        lblHeader.setBackground(new Color(210, 180, 140));
         lblHeader.setForeground(Color.WHITE);
-        lblHeader.setPreferredSize(new Dimension(0, 70));
-        add(lblHeader, BorderLayout.NORTH);
+
+        // ===== NÚT THOÁT =====
+        JButton btnExit = new JButton("Thoát");
+        btnExit.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnExit.setFocusPainted(false);
+        btnExit.setBackground(new Color(108, 117, 125)); // xám
+        btnExit.setForeground(Color.WHITE);
+        btnExit.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnExit.setPreferredSize(new Dimension(100, 40));
+
+        btnExit.addActionListener(e -> handleExit());
+
+        pnlHeader.add(lblHeader, BorderLayout.CENTER);
+        pnlHeader.add(btnExit, BorderLayout.EAST);
+
+        add(pnlHeader, BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout());
         add(body, BorderLayout.CENTER);
@@ -252,23 +271,10 @@ public class FrmOrder extends JFrame {
         p.add(status, BorderLayout.SOUTH);
 
         // ===== BÀN CÓ NGƯỜI → KHÓA CỨNG =====
-        p.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        p.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-                if (selectedTablePanel != null) {
-                    selectedTablePanel.setBorder(new LineBorder(Color.GRAY, 1));
-                }
-
-                selectedTablePanel = p;
-                selectedTable = table;
-                p.setBorder(new LineBorder(Color.BLUE, 2));
-
-                refreshOrderList();
-            }
-        });
+        if (isBusy) {
+            p.setCursor(Cursor.getDefaultCursor());
+            return p; // ❌ KHÔNG GẮN MOUSE LISTENER
+        }
 
         // ===== CHỈ BÀN TRỐNG MỚI GẮN CLICK =====
         p.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -277,17 +283,17 @@ public class FrmOrder extends JFrame {
             public void mouseClicked(MouseEvent e) {
 
                 // đang tạo hóa đơn → không đổi bàn
-//                if (isOrdering && selectedTable != null
-//                        && table.getID() != selectedTable.getID()) {
-//
-//                    JOptionPane.showMessageDialog(
-//                            FrmOrder.this,
-//                            "Đang tạo hóa đơn cho bàn hiện tại!",
-//                            "Cảnh báo",
-//                            JOptionPane.WARNING_MESSAGE
-//                    );
-//                    return;
-//                }
+                if (isOrdering && selectedTable != null
+                        && table.getID() != selectedTable.getID()) {
+
+                    JOptionPane.showMessageDialog(
+                            FrmOrder.this,
+                            "Đang tạo hóa đơn cho bàn hiện tại!",
+                            "Cảnh báo",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
 
                 if (selectedTablePanel != null) {
                     selectedTablePanel.setBorder(new LineBorder(Color.GRAY, 1));
@@ -424,50 +430,22 @@ public class FrmOrder extends JFrame {
 
     // ================= ORDER =================
     private void addProductToOrder(ProductDTO p) {
-    	 int id = selectedTable.getID();
+        int id = selectedTable.getID();
 
-    	    orderMap.putIfAbsent(id, new ArrayList<>());
+        // bắt đầu tạo hóa đơn
+        isOrdering = true;
 
-    	    // Nếu bàn chưa có món → tức là mới bắt đầu order
-    	    if (orderMap.get(id).isEmpty()) {
+        orderMap.putIfAbsent(id, new ArrayList<>());
 
-    	        // Nếu bàn đang trống thì hỏi xác nhận
-    	        if (selectedTable.getStatus() == 0) {
-
-    	            int confirm = JOptionPane.showConfirmDialog(
-    	                    null,
-    	                    "Bạn đang tạo bàn mới?\nTiếp tục order cho bàn này?",
-    	                    "Xác nhận",
-    	                    JOptionPane.YES_NO_OPTION
-    	            );
-
-    	            if (confirm != JOptionPane.YES_OPTION) {
-    	                return; // Người dùng chọn No → hủy add món
-    	            }
-
-    	            // Update DB thành Có người
-    	            TableBLL.updateStatusTable(id, 1);
-
-    	            // Cập nhật lại trạng thái trong object
-    	            selectedTable.setStatus(1);
-
-    	            // Reload lại bàn để đổi màu
-    	            loadTables();
-    	        }
-    	    }
-
-    	    // Nếu sản phẩm đã tồn tại thì tăng số lượng
-    	    for (OrderItem it : orderMap.get(id)) {
-    	        if (it.product.getID() == p.getID()) {
-    	            it.quantity++;
-    	            refreshOrderList();
-    	            return;
-    	        }
-    	    }
-
-    	    // Nếu chưa có thì thêm mới
-    	    orderMap.get(id).add(new OrderItem(p));
-    	    refreshOrderList();
+        for (OrderItem it : orderMap.get(id)) {
+            if (it.product.getID() == p.getID()) {
+                it.quantity++;
+                refreshOrderList();
+                return;
+            }
+        }
+        orderMap.get(id).add(new OrderItem(p));
+        refreshOrderList();
     }
 
     private void refreshOrderList() {
@@ -645,7 +623,24 @@ public class FrmOrder extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new FrmOrder().setVisible(true));
+    
+    private void handleExit() {
+
+        if (isOrdering) {
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Đang tạo hóa đơn.\nThoát sẽ mất dữ liệu!\nBạn chắc chắn?",
+                    "Xác nhận thoát",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirm != JOptionPane.YES_OPTION) return;
+        }
+
+        dispose();
+
+        // TRUYỀN ĐÚNG TÀI KHOẢN
+        new SelectRoleGUI(tk).setVisible(true);
     }
 }

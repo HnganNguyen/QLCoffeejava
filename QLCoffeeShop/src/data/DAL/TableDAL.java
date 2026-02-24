@@ -125,4 +125,19 @@ public class TableDAL {
     public static List<TableDTO> getListTableHaveStatusZero() {
         return getTableByStatus(0);
     }
+    
+    public static void updateTableStatus(int idTable, int status) {
+        String sql = "UPDATE BAN SET TRANGTHAI = ? WHERE MA = ?";
+
+        try (Connection conn = MySQLConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, status);
+            ps.setInt(2, idTable);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

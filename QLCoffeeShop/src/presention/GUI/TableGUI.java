@@ -14,16 +14,18 @@ public class TableGUI extends JFrame {
     private JPanel pnlTableList;
     private JTextField txtTableName;
 
-	private String username;
-	private String role;
+    private String username;
+    private String role;
 
     public TableGUI(String username, String role) {
-    	this.username = username;
+        this.username = username;
         this.role = role;
+
         setTitle("Quản lý Bàn");
         setSize(1100, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
         initUI();
         loadTable();
     }
@@ -31,14 +33,14 @@ public class TableGUI extends JFrame {
     private void initUI() {
         setLayout(new BorderLayout());
 
-        // TOP
+        // ===== TOP =====
         add(new TopPanel(this, "TABLE", username, role), BorderLayout.NORTH);
 
         JPanel pnlCenter = new JPanel(new BorderLayout());
         pnlCenter.setBackground(SUB_COLOR);
         pnlCenter.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // ACTION
+        // ===== ACTION =====
         JPanel pnlAction = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlAction.setBackground(SUB_COLOR);
 
@@ -51,15 +53,23 @@ public class TableGUI extends JFrame {
         pnlAction.add(btnAdd);
         pnlAction.add(btnDelete);
 
-        // LIST
-        pnlTableList = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        // ===== LIST (GRID -> SCROLL DỌC) =====
+        pnlTableList = new JPanel();
         pnlTableList.setBackground(SUB_COLOR);
+
+        // 🔥 4 bàn / hàng, tự xuống dòng
+        pnlTableList.setLayout(new GridLayout(0, 4, 15, 15));
 
         JScrollPane scroll = new JScrollPane(pnlTableList);
         scroll.setBorder(null);
 
+        // ❌ KHÔNG CHO CUỘN NGANG
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
         pnlCenter.add(pnlAction, BorderLayout.NORTH);
         pnlCenter.add(scroll, BorderLayout.CENTER);
+
         add(pnlCenter, BorderLayout.CENTER);
 
         btnAdd.addActionListener(e -> addTable());
@@ -96,11 +106,9 @@ public class TableGUI extends JFrame {
         btn.addActionListener(e -> {
             int newStatus = tb.getStatus() == 0 ? 1 : 0;
 
-            // 🔥 UPDATE DB TRƯỚC
             boolean success = TableBLL.updateStatusTable(newStatus, tb.getID());
 
             if (success) {
-                // 🔥 CHỈ KHI DB OK MỚI UPDATE RAM + UI
                 tb.setStatus(newStatus);
                 updateButtonUI(btn, tb);
             } else {

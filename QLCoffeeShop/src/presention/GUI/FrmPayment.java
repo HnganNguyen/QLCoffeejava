@@ -1,19 +1,32 @@
 package presention.GUI;
 
-import shared.DTO.TableDTO;
+import business.BLL.BillBLL;
+import business.BLL.ChiTietBillBLL;
+import business.BLL.TableBLL;
+import shared.DTO.*;
+import shared.utils.BillPDFUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class FrmPayment extends JDialog {
 
     private JLabel lblTotal, lblFinal, lblChange;
     private JTextField txtDiscount, txtCustomerPay;
-    private double total;
 
-    public FrmPayment(JFrame parent, TableDTO table, List<?> items) {
+    private double total;
+    private TableDTO table;
+    private List<FrmOrder.OrderItem> items;
+
+    public FrmPayment(JFrame parent, TableDTO table, List<FrmOrder.OrderItem> items) {
         super(parent, "Thanh toán", true);
+        this.table = table;
+        this.items = items;
+
         setSize(420, 360);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout(10, 10));
@@ -67,11 +80,7 @@ public class FrmPayment extends JDialog {
         btnCancel.setBackground(new Color(108, 117, 125));
         btnCancel.setForeground(Color.WHITE);
 
-        btnOk.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Thanh toán thành công!");
-            dispose();
-        });
-
+        btnOk.addActionListener(e -> doPayment());
         btnCancel.addActionListener(e -> dispose());
 
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
@@ -93,10 +102,102 @@ public class FrmPayment extends JDialog {
         });
     }
 
-    private double calcTotal(List<?> list) {
+    // ================== THANH TOÁN + XUẤT BILL ==================
+    private void doPayment() {
+        try {
+            double finalTotal = parse(lblFinal.getText());
+
+            if (finalTotal <= 0) {
+                JOptionPane.showMessageDialog(this, "Số tiền không hợp lệ!");
+                return;
+            }
+
+            // ===== LẤY GIẢM GIÁ & TIỀN KHÁCH ĐƯA =====
+            double discountPercent = 0;
+            double customerPay = 0;
+
+            try {
+                discountPercent = Double.parseDouble(txtDiscount.getText());
+            } catch (Exception ignored) {}
+
+            try {
+                customerPay = Double.parseDouble(txtCustomerPay.getText());
+            } catch (Exception ignored) {}
+
+            if (customerPay < finalTotal) {
+                JOptionPane.showMessageDialog(this, "Khách đưa chưa đủ tiền!");
+                return;
+            }
+
+            // ===== 1. INSERT BILL =====
+            BillDTO bill = new BillDTO();
+            bill.setCreateDay(new Date());
+            bill.setTotal(finalTotal);
+            bill.setIdTable(table.getID());
+            bill.setEmploy(AppContext.taiKhoanDangNhap.getId());
+            bill.setStatus(1);
+
+            int billId = BillBLL.insertBill(bill);
+            if (billId <= 0) {
+                JOptionPane.showMessageDialog(this, "Không tạo được hóa đơn!");
+                return;
+            }
+            bill.setID(billId);
+
+            // ===== 2. INSERT CHI TIẾT BILL =====
+            List<ChiTietBillDTO> listCT = new ArrayList<>();
+
+            for (FrmOrder.OrderItem it : items) {
+                ChiTietBillDTO ct = new ChiTietBillDTO();
+                ct.setMaBill(billId);
+                ct.setIdProduct(it.product.getID());
+                ct.setSoLuong(it.quantity);
+
+                double gia = it.product.getSalePrice() > 0
+                        ? it.product.getSalePrice()
+                        : it.product.getPriceBasic();
+
+                ChiTietBillBLL.insertChiTietBill(ct, gia);
+                listCT.add(ct);
+            }
+
+            // ===== 3. UPDATE TABLE -> TRỐNG =====
+            TableBLL.updateTableStatus(table.getID(), 0);
+
+            // ===== 4. XUẤT + MỞ BILL PDF =====
+            String filePath =
+                    "bill_" + billId + "_" + System.currentTimeMillis() + ".pdf";
+
+            BillPDFUtil.exportBill(
+                    filePath,
+                    bill,
+                    listCT,
+                    discountPercent,
+                    customerPay
+            );
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(new File(filePath));
+            }
+
+            JOptionPane.showMessageDialog(this, "Thanh toán thành công!");
+            dispose();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Lỗi khi thanh toán / xuất bill!",
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    // ================== HỖ TRỢ ==================
+    private double calcTotal(List<FrmOrder.OrderItem> list) {
         double sum = 0;
-        for (Object o : list) {
-            FrmOrder.OrderItem it = (FrmOrder.OrderItem) o;
+        for (FrmOrder.OrderItem it : list) {
             sum += it.getTotal();
         }
         return sum;
@@ -123,6 +224,10 @@ public class FrmPayment extends JDialog {
     }
 
     private double parse(String s) {
-        return Double.parseDouble(s.replace("đ", "").replace(",", "").trim());
+        return Double.parseDouble(
+                s.replace("đ", "")
+                 .replace(",", "")
+                 .trim()
+        );
     }
 }

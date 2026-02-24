@@ -5,7 +5,8 @@ import java.sql.SQLException;
 
 public class TaiKhoanDTO {
 
-    private String id;          // ✅ VARCHAR
+    // ===== Fields =====
+    private String id;          // MATAIKHOAN (VARCHAR)
     private String password;
     private String tenTK;
     private String cccd;
@@ -15,11 +16,10 @@ public class TaiKhoanDTO {
     private int trangThai;
     private double luongByCa;
 
-    // Constructor rỗng
-    public TaiKhoanDTO() {
-    }
+    // ===== Constructor rỗng =====
+    public TaiKhoanDTO() {}
 
-    // Constructor từ ResultSet
+    // ===== Constructor từ ResultSet =====
     public TaiKhoanDTO(ResultSet rs) throws SQLException {
         this.id = rs.getString("MATAIKHOAN");
         this.password = rs.getString("PASS");
@@ -32,7 +32,7 @@ public class TaiKhoanDTO {
         this.luongByCa = rs.getDouble("LUONG");
     }
 
-    // Constructor đầy đủ
+    // ===== Constructor đầy đủ =====
     public TaiKhoanDTO(String id, String tenTK, String password, String cccd,
                        String sdt, String diaChi, int quyen,
                        int trangThai, double luongByCa) {
@@ -47,7 +47,7 @@ public class TaiKhoanDTO {
         this.luongByCa = luongByCa;
     }
 
-    // Getter & Setter
+    // ===== Getter & Setter =====
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -75,8 +75,12 @@ public class TaiKhoanDTO {
     public double getLuongByCa() { return luongByCa; }
     public void setLuongByCa(double luongByCa) { this.luongByCa = luongByCa; }
 
-	public void setMaTaiKhoan(String maTaiKhoan) {
-		// TODO Auto-generated method stub
-		
-	}
+    // ===== Helper (rất nên có) =====
+    public boolean isAdmin() {
+        return quyen == 1;
+    }
+
+    public boolean isNhanVien() {
+        return quyen == 0;
+    }
 }

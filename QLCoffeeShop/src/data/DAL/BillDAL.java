@@ -11,7 +11,7 @@ import java.util.List;
 
 public class BillDAL {
 
-    // 1️⃣ Lấy danh sách hóa đơn đã thanh toán (TRANGTHAI = 1)
+    // 1️⃣ Lấy danh sách hóa đơn đã thanh toán
     public static List<BillDTO> getAllListBill() {
         List<BillDTO> listBill = new ArrayList<>();
         String sql = "SELECT * FROM HOADON WHERE TRANGTHAI = 1";
@@ -41,8 +41,7 @@ public class BillDAL {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                BillDTO bill = new BillDTO(rs);
-                return bill.getID();
+                return rs.getInt("MA");
             }
 
         } catch (Exception e) {
@@ -69,7 +68,7 @@ public class BillDAL {
         return 1;
     }
 
-    // 4️⃣ Cập nhật hóa đơn (thanh toán)
+    // 4️⃣ Cập nhật hóa đơn (thanh toán) ✅ SỬA employ → String
     public static void updateBill(int id,
                                   double totalBill,
                                   double promotion,
@@ -77,7 +76,7 @@ public class BillDAL {
                                   double outPrice,
                                   double revenue,
                                   Date dateTime,
-                                  int employ) {
+                                  String employ) {
 
         String sql = "CALL USP_UpdateBill(?,?,?,?,?,?,?,?)";
 
@@ -87,7 +86,7 @@ public class BillDAL {
             ps.setInt(1, id);
             ps.setDouble(2, totalBill);
             ps.setTimestamp(3, new java.sql.Timestamp(dateTime.getTime()));
-            ps.setInt(4, employ);
+            ps.setString(4, employ);              // ✅ String
             ps.setDouble(5, promotion);
             ps.setDouble(6, customerPrice);
             ps.setDouble(7, outPrice);
@@ -100,29 +99,28 @@ public class BillDAL {
         }
     }
 
-    // 5️⃣ Thêm hóa đơn mới
-	 public static void insertBill(Date dateTime,
-	            double total,
-	            String employId,   // ✅ ĐÚNG
-	            int idTable) {
-	
-	String sql = "CALL USP_InsertBILL(?,?,?,?)";
-	
-		try (Connection conn = MySQLConnect.getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
-	
-			ps.setTimestamp(1, new java.sql.Timestamp(dateTime.getTime()));
-			ps.setDouble(2, total);
-			ps.setString(3, employId);   // ✅ String
-			ps.setInt(4, idTable);
-	
-			ps.executeUpdate();
-	
-		} catch (Exception e) {
-			e.printStackTrace();
-	}
-	}
+    // 5️⃣ Thêm hóa đơn mới (Stored Procedure)
+    public static void insertBill(Date dateTime,
+                                  double total,
+                                  String employId,
+                                  int idTable) {
 
+        String sql = "CALL USP_InsertBILL(?,?,?,?)";
+
+        try (Connection conn = MySQLConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setTimestamp(1, new java.sql.Timestamp(dateTime.getTime()));
+            ps.setDouble(2, total);
+            ps.setString(3, employId); // ✅ String
+            ps.setInt(4, idTable);
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // 6️⃣ Xóa hóa đơn
     public static void deleteBill(int idBill) {
@@ -138,6 +136,8 @@ public class BillDAL {
             e.printStackTrace();
         }
     }
+
+    // 7️⃣ Lấy ID hóa đơn theo ID bàn (chưa thanh toán)
     public static int getIDBillByIDTable(int idTable) {
 
         String sql = """
@@ -164,4 +164,37 @@ public class BillDAL {
         return -1;
     }
 
+    // 8️⃣ Thêm hóa đơn bằng BillDTO (TRẢ VỀ MA HOADON)
+    public static int insertBill(BillDTO bill) {
+
+        String sql = """
+            INSERT INTO HOADON
+            (NGAYTAO, TONGTIEN, MANHANVIEN, MABAN, TRANGTHAI)
+            VALUES (?, ?, ?, ?, ?)
+        """;
+
+        try (Connection conn = MySQLConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     sql,
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            ps.setTimestamp(1, new java.sql.Timestamp(bill.getCreateDay().getTime()));
+            ps.setDouble(2, bill.getTotal());
+            ps.setString(3, bill.getEmploy());   // ✅ SỬA Ở ĐÂY
+            ps.setInt(4, bill.getIdTable());
+            ps.setInt(5, bill.getStatus());
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
 }

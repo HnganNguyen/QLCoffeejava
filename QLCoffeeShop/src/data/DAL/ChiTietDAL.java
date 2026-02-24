@@ -28,8 +28,13 @@ public class ChiTietDAL {
 	    }
 
 	    // 2️⃣ Thêm chi tiết bill (CALL Stored Procedure)
-	    public static void insertChiTietBill(int maBill, int idProduct, int soLuong) {
-	        String sql = "CALL USP_INSERTCHITIETBILL(?, ?, ?)";
+	    public static void insertChiTietBill(
+	            int maBill,
+	            int idProduct,
+	            int soLuong,
+	            double gia) {
+
+	        String sql = "CALL USP_INSERTCHITIETBILL(?, ?, ?, ?)";
 
 	        try (Connection conn = MySQLConnect.getConnection();
 	             PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -37,6 +42,8 @@ public class ChiTietDAL {
 	            ps.setInt(1, maBill);
 	            ps.setInt(2, idProduct);
 	            ps.setInt(3, soLuong);
+	            ps.setDouble(4, gia);
+
 	            ps.executeUpdate();
 
 	        } catch (Exception e) {

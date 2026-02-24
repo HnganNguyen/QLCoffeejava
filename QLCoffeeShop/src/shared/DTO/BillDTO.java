@@ -6,15 +6,15 @@ import java.util.Date;
 
 public class BillDTO {
 
-    // ===== Thuộc tính gốc (BillDTO) =====
+    // ===== Thuộc tính gốc =====
     private int id;
     private Date createDay;
     private double total;
     private int idTable;
-    private int employ;
+    private String employ;   // 🔥 MATAIKHOAN (VARCHAR)
     private int status;
 
-    // ===== Thuộc tính mở rộng (BillUpDTO) =====
+    // ===== Thuộc tính mở rộng =====
     private double promotionPrice;
     private double customerPrice;
     private double outPrice;
@@ -22,12 +22,11 @@ public class BillDTO {
     private String tableName;
 
     // ===== Constructor rỗng =====
-    public BillDTO() {
-    }
+    public BillDTO() {}
 
-    // ===== Constructor đầy đủ (giống C# BillDTO) =====
+    // ===== Constructor đầy đủ =====
     public BillDTO(int id, Date createDay, double total,
-                   int idTable, int employ, int status) {
+                   int idTable, String employ, int status) {
         this.id = id;
         this.createDay = createDay;
         this.total = total;
@@ -36,7 +35,7 @@ public class BillDTO {
         this.status = status;
     }
 
-    // ===== Constructor từ ResultSet (thay cho DataRow) =====
+    // ===== Constructor từ ResultSet =====
     public BillDTO(ResultSet rs) throws SQLException {
 
         // BillDTO
@@ -44,10 +43,10 @@ public class BillDTO {
         this.createDay = rs.getTimestamp("ngaytao");
         this.total = rs.getDouble("tongtien");
         this.idTable = rs.getInt("maban");
-        this.employ = rs.getInt("manhanvien");
+        this.employ = rs.getString("manhanvien"); // 🔥 VARCHAR
         this.status = rs.getInt("trangthai");
 
-        // BillUpDTO (nếu có cột thì lấy, không có thì bỏ qua)
+        // BillUpDTO (nếu có)
         try {
             this.promotionPrice = rs.getDouble("giauudai");
             this.customerPrice = rs.getDouble("giakhachhang");
@@ -55,7 +54,6 @@ public class BillDTO {
             this.revenue = rs.getDouble("doanhthu");
             this.tableName = rs.getString("tenban");
         } catch (SQLException e) {
-            // Query không có các cột BillUp → bỏ qua
             this.tableName = "";
         }
     }
@@ -93,11 +91,11 @@ public class BillDTO {
         this.idTable = idTable;
     }
 
-    public int getEmploy() {
+    public String getEmploy() {
         return employ;
     }
 
-    public void setEmploy(int employ) {
+    public void setEmploy(String employ) {
         this.employ = employ;
     }
 
