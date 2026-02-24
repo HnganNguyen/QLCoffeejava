@@ -111,7 +111,7 @@ public class SelectRoleGUI extends JFrame {
         // 👉 ĐỔI MẬT KHẨU
         btnChangePass.addActionListener(e -> {
             dispose();
-            new ChangePasswordGUI(tk).setVisible(true); // form chưa làm
+            new ChangePasswordGUI(tk).setVisible(true); 
         });
 
         // 👉 ĐĂNG XUẤT

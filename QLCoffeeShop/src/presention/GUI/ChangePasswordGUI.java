@@ -42,8 +42,11 @@ public class ChangePasswordGUI extends JFrame {
         pnlHeader.setOpaque(false);
         pnlHeader.setLayout(new BoxLayout(pnlHeader, BoxLayout.Y_AXIS));
 
-        JLabel lblIcon = new JLabel("🔐", JLabel.CENTER);
-        lblIcon.setFont(new Font("Segoe UI", Font.BOLD, 42));
+        ImageIcon icon = new ImageIcon(
+                getClass().getResource("/resources/images/reset-password.png")
+        );
+
+        JLabel lblIcon = new JLabel(icon);
         lblIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblTitle = new JLabel("ĐỔI MẬT KHẨU");
